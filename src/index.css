@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Global styles for the event browsing application.  Tailwind's
+  directives above will inject its base, component and utility
+  styles.  Additional base styles can be added here to customize
+  typography, default colors or other cross‑cutting concerns.
+*/
+body {
+  @apply font-sans text-gray-900;
+}

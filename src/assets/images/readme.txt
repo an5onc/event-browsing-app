@@ -1,0 +1,1 @@
+Logos, icons, small UI images

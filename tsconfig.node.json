@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./.tsbuild/node",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"],
+  "exclude": ["src"]
+}

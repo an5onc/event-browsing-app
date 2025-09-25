@@ -1,0 +1,1 @@
+User uploads, big photos, or static backgrounds
