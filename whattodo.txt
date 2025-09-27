@@ -1,128 +1,40 @@
-Event Browsing App — Frontend Branch Setup Guide (Vite + React + Tailwind)
+Step-by-Step Guide
+==================
 
-Goal: Work only on the `frontend` branch. Do not touch `main`.
+1. Clone the repository:
+   - Choose a folder (e.g., Desktop).
+   - Run: `git clone https://github.com/an5onc/event-browsing-app.git`
+   - Change directory: `cd event-browsing-app`
 
-Clone the fork (same on Mac & Windows)
-1) Choose a folder to work in (e.g., Desktop).
-2) Clone your fork and enter the repo:
-   ```bash
-   git clone https://github.com/an5onc/event-browsing-app.git
-   cd event-browsing-app
-   ```
-3) Fetch all remote branches and confirm `origin/frontend` exists:
-   ```bash
-   git fetch --all --prune
-   git branch -r   # look for origin/frontend
-   ```
+2. Switch to the frontend branch:
+   - Run: `git fetch --all --prune`
+   - Run: `git switch -c frontend --track origin/frontend`
 
-Create/Switch to the `frontend` branch
-- If `origin/frontend` exists:
-  ```bash
-  git switch -c frontend --track origin/frontend
-  ```
-- If it does NOT exist yet but you want to base it on `main`:
-  ```bash
-  git switch -c frontend origin/main
-  git push -u origin frontend
-  ```
+3. Verify you are on the frontend branch:
+   - Run: `git rev-parse --abbrev-ref HEAD`
+   - Output should be: `frontend`
+   - If still on main, run: `git switch frontend`
+   - To see all branches: `git branch`
 
-Verify you are on `frontend` (before any work)
-```bash
-git rev-parse --abbrev-ref HEAD   # should print: frontend
-git status -sb                    # should show: ## frontend...origin/frontend
-```
-If it shows `main`, switch:
-```bash
-git switch frontend
-```
+4. Install Node.js and npm (if not already installed):
+   - Download from https://nodejs.org (choose LTS version 18 or newer).
+   - To check installation: `node -v` and `npm -v`
 
-Install dependencies (choose ONE tool)
-- npm (Node LTS):
-  ```bash
-  npm ci || npm install
-  ```
-- pnpm:
-  ```bash
-  pnpm install
-  ```
-- yarn:
-  ```bash
-  yarn install
-  ```
-- bun:
-  ```bash
-  bun install
-  ```
+5. Install dependencies: this will install all dependencies located in the package.json file
+   - Run: `npm install`
 
-Run the dev server (Vite) — Mac & Windows
-- npm:
-  ```bash
-  npm run dev
-  ```
-- pnpm:
-  ```bash
-  pnpm dev
-  ```
-- yarn:
-  ```bash
-  yarn dev
-  ```
-- bun:
-  ```bash
-  bun run dev
-  ```
-Open the printed local URL 
-(commonly http://localhost:3000/). Leave this terminal running while developing.
-    ```
+6. Run the app:
+   - npm run dev or npm start
 
-Daily workflow (only on `frontend`)
-1) Make sure you are on `frontend`:
-   ```bash
-   git rev-parse --abbrev-ref HEAD
-   ```
-2) Pull the latest `frontend` with rebase:
-   ```bash
-   git pull --rebase origin frontend
-   ```
-3) Do your work. Add/commit only on `frontend`:
-   ```bash
-   git add .
-   git commit -m "<describe your change>"
-   ```
-4) Push to your fork’s `frontend`:
-   ```bash
-   git push origin frontend
-   ```
+7. Daily workflow: when you open you comnputer and you want to start working on your page. 
+    You need to pull any changes that your team members might have pushed since the last time you worked.
+   - Before you start: `git pull`
+   - Start working
+   - Save your file after every edit. When ready to upload to git, follow next step.
+   - Make your changes and commit: `git add .` then `git commit -m "Your message"`
+   - Push your changes: `git push`
 
-Keeping `main` untouched
-- Never commit on `main` locally. If you land on `main`, immediately switch back:
-  ```bash
-  git switch frontend
-  ```
-- Optional: make `frontend` your default working branch in GitHub repo settings and protect `main`.
-
-Useful checks and fixes
-- Show current branch and its upstream:
-  ```bash
-  git status -sb
-  git branch -vv
-  ```
-- If dependencies get corrupted:
-  ```bash
-  rm -rf node_modules package-lock.json pnpm-lock.yaml yarn.lock bun.lockb  # Mac/Linux
-  # Windows PowerShell:
-  rmdir /s /q node_modules; del package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lockb
-  # reinstall using your chosen PM
-  ```
-- If you cloned earlier and only see `main`:
-  ```bash
-  git fetch --all --prune
-  git branch -r
-  git switch -c frontend --track origin/frontend
-  ```
-
-Summary
-- Stack: Vite + React + Tailwind.
-- Work ONLY on branch: `frontend`.
-- Verify branch BEFORE add/commit/push.
-- Install deps with your chosen PM. Run dev with that PM.
+8. Troubleshooting:
+   - If `npm install` fails:
+     1. Upgrade npm: `npm install -g npm@latest`
+     2. If still broken: delete `node_modules` and `package-lock.json`, then run `npm install` again.
