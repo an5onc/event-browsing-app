@@ -1,0 +1,40 @@
+Step-by-Step Guide
+==================
+
+1. Clone the repository:
+   - Choose a folder (e.g., Desktop).
+   - Run: `git clone https://github.com/an5onc/event-browsing-app.git`
+   - Change directory: `cd event-browsing-app`
+
+2. Switch to the frontend branch:
+   - Run: `git fetch --all --prune`
+   - Run: `git switch -c frontend --track origin/frontend`
+
+3. Verify you are on the frontend branch:
+   - Run: `git rev-parse --abbrev-ref HEAD`
+   - Output should be: `frontend`
+   - If still on main, run: `git switch frontend`
+   - To see all branches: `git branch`
+
+4. Install Node.js and npm (if not already installed):
+   - Download from https://nodejs.org (choose LTS version 18 or newer).
+   - To check installation: `node -v` and `npm -v`
+
+5. Install dependencies: this will install all dependencies located in the package.json file
+   - Run: `npm install`
+
+6. Run the app:
+   - npm run dev or npm start
+
+7. Daily workflow: when you open you comnputer and you want to start working on your page. 
+    You need to pull any changes that your team members might have pushed since the last time you worked.
+   - Before you start: `git pull`
+   - Start working
+   - Save your file after every edit. When ready to upload to git, follow next step.
+   - Make your changes and commit: `git add .` then `git commit -m "Your message"`
+   - Push your changes: `git push`
+
+8. Troubleshooting:
+   - If `npm install` fails:
+     1. Upgrade npm: `npm install -g npm@latest`
+     2. If still broken: delete `node_modules` and `package-lock.json`, then run `npm install` again.
