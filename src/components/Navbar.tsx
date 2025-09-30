@@ -68,7 +68,7 @@ export function Navbar() {
             {/* Right */}
             <div className = "flex gap-4">
                 <NavLink to = "/create" className = "flex items-center">
-                    <img src = {CreateIcon} alt = "Create" className = "h-6" />
+                    <img src = {CreateIcon} alt = "Create" className = "h-4" />
                 </NavLink>
 
                 <NavLink to = "/help" className = "flex items-center">
@@ -76,7 +76,7 @@ export function Navbar() {
                 </NavLink>
 
                 <NavLink to = "/profile" className = "flex items-center">
-                    <img src = {AccountIcon} alt = "Profile" className = "h-6" />
+                    <img src = {AccountIcon} alt = "Profile" className = "h-5" />
                 </NavLink>
             </div>
         </nav>
