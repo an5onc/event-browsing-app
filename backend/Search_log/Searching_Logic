@@ -1,1 +1,26 @@
 // Using React 
+def search_by_title(events, title_query):
+    return [event for event in events if title_query.lower() in event['title'].lower()]
+
+from datetime import datetime
+def search_by_date(events, start_date, end_date):
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+    return [event for event in events if start <= datetime.strptime(event['date'], "%Y-%m-%d") <= end]
+
+def search_by_cate(events, categories):
+    return [event for event in events if event['category'] in categories]
+
+def search_by_des(events, keyword):
+    return [event for event in events if keyword.lower() in event.get('description', '').lower()]
+
+events = [
+    {
+
+    }
+]
+
+from search_logic.title_search import search_by_title
+from search_logic.date_search import search_by_date
+from search_logic.category_search import search_by_cate
+from search_logic.description_search import search_by_des

@@ -70,6 +70,8 @@ def create_event(
     except Exception as e:
         print(f"SQLite error while inserting event: {e}")
 
+    sqliteConnection.close()
+
 
 # Example usage (comment this out when React frontend calls it instead)
 # create_event(
@@ -88,7 +90,7 @@ def create_event(
 # )
 
 # Close the connection when done
-sqliteConnection.close()
+#sqliteConnection.close()
 
 """(the db_operations_products file is a previous project I worked on.
 The other file is the script to make the database for my current project.

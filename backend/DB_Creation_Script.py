@@ -10,43 +10,64 @@ cursor = sqliteConnection.cursor()
 # Initializing is shown above, and just like filereading in java, I think you can name
 # sqlliteconnection and cursor anything, so long as its consistent.
 # 
+# closing the connection looks like
+#     sqliteConnection.commit()
+#     sqliteConnection.close()
 # 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-
 
 #=========================================================================================
-sql_command = """
-CREATE DATABASE eventPlanner;
-USE eventPlanner;
-"""
+# sql_command = """
+# CREATE DATABASE eventPlanner;
+# USE eventPlanner;
+# """
+# cursor.execute(sql_command)
+
+
+sql_command = """CREATE TABLE accounts (
+accountID INTEGER PRIMARY KEY, 
+username VARCHAR(20) UNIQUE,
+accountType ENUM("Student", "Faculty"),
+password VARCHAR(50), 
+recoveryEmail VARCHAR(60),
+LikedEvents INTEGER
+);
+
+
+CREATE TABLE events (
+eventID INTEGER PRIMARY KEY,     
+creatorID INTEGER, 
+eventName VARCHAR(50) NOT NULL, 
+eventDescription VARCHAR(250) NOT NULL,         
+images MEDIUMBLOB,
+eventType SET("Art", "Math", "Science", "Computer Science", "History", "Education", "Political Science", "Software Engineering", "Business","Sports","Honors", "Workshops", "Study Session", "Dissertation", "Performance", "Competition"),    
+eventAccess ENUM("Public", "Private"), 
+startDateTime DATETIME NOT NULL, 
+endDateTime DATETIME NOT NULL, 
+numberOfLikes INTEGER,
+
+FOREIGN KEY (creatorID) REFERENCES accounts(accountID)
+);
+
+CREATE TABLE RSVPed_Events ( 
+rsvpID INTEGER PRIMARY KEY AUTO_INCREMENT,
+eventID INTEGER NOT NULL,
+creatorID INTEGER NOT NULL,
+userWhoRSVPID INTEGER NOT NULL,
+
+FOREIGN KEY (eventID) REFERENCES events(eventID),
+FOREIGN KEY (creatorID) REFERENCES events(creatorID),
+FOREIGN KEY (userWhoRSVPID) REFERENCES accounts(accountID)
+);"""
+
 cursor.execute(sql_command)
-
-
+sqliteConnection.commit()
+sqliteConnection.close()
 
 #This script is just for making the table, logic like email authentication will be elsewhere
 #I was hoping to do the RSVPEvents and LikedEvents as a list, all I could find is BLOB, and 
 #idk how they work yet (growth mindset)
 #but we might just end up needing to treat it like a CSV and cry about it
 
-sql_command = """CREATE TABLE accounts (
-accountID INTEGER PRIMARY KEY AUTO_INCREMENT, 
-username VARCHAR(20) UNIQUE,
-accountType ENUM ("Student", "Faculty"),
-password VARCHAR (50), 
-recoveryEmail VARCHAR(60),
-LikedEvents INTEGER (5);"""
-
-cursor.execute(sql_command)
 
 # RSVP'd events and Liked Events are things we can query up, 
 # and are no longer attempting to make part of the table
@@ -54,46 +75,14 @@ cursor.execute(sql_command)
 
 
 
-
+# HOW TO HANDLE RSVPs
 # OPTION A)  This is a Log of RSVPs, which references both Event ID and 
 #            ?? Create logic to delete all rsvps of an event once the event is over?
 #                     ?? should we create logic to delete an event automatically 24-72 hours after its endDateTime?
 #            PRIMARY KEY is (eventID, userWhoRSVPID), there is no singular candidate key
-sql_command = """ CREATE TABLE RSVPed_Events ( 
-eventID INTEGER (10) NOT NULL,
-creatorID (10) NOT NULL,
-userWhoRSVPID (10) NOT NULL,
-
-FOREIGN KEY (eventID) REFERENCES events,
-FOREIGN KEY (creatorID) REFERENCES events(accountID),
-FOREIGN KEY (userWhoRSVPID) REFERENCES accounts(accountID)
-);"""
-cursor.execute(sql_command)
 
 
 
-
-
-sql_command = """CREATE TABLE events (
-eventID INTEGER PRIMARY KEY AUTO_INCREMENT,     
-accountID INTEGER (10), 
-accountType ENUM  ("Student", "Faculty"),
-eventName VARCHAR(50) NOT NULL, 
-eventDescription VARCHAR(250) NOT NULL,         
-images MEDIUMBLOB,
-eventType SET ("Art", "Math", "Science", "Computer Science", "History", "Education", "Political Science", "Software Engineering", "Business","Sports","Honors", "Workshops", "Study Session", "Dissertation", "Performance", "Competition"),    
-eventAccess ENUM ("Public", "Private"), 
-startDateTime DATETIME NOT NULL, 
-endDateTime DATETIME NOT NULL, 
-numberOfLikes INTEGER(5),
-
-FOREIGN KEY (accountID) REFERENCES accounts,
-FOREIGN KEY (accountType) REFERENCES accounts
-);"""
-
-
-
-cursor.execute(sql_command)
 
 
 
@@ -119,5 +108,3 @@ cursor.execute(sql_command)
 #I think numberofLikes INTEGER(6) means that val has 6 digits, could be wrong
 
 
-sqliteConnection.commit()
-sqliteConnection.close()
