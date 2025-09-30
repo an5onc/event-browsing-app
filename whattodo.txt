@@ -33,6 +33,12 @@ Step-by-Step Guide
    - Save your file after every edit. When ready to upload to git, follow next step.
    - Make your changes and commit: `git add .` then `git commit -m "Your message"`
    - Push your changes: `git push`
+   - Note: GitHub will require you to authenticate the first time you push from your computer. This is normal for all repositories.
+     Options:
+       * GitHub CLI: install from https://cli.github.com and run `gh auth login`
+       * SSH keys: generate with `ssh-keygen -t ed25519 -C "your_email@example.com"` and add to GitHub
+       * HTTPS + Personal Access Token: use your GitHub username and a token instead of a password
+   - After you sign in once, your computer will remember and you won’t have to log in every time.
 
 8. Troubleshooting:
    - If `npm install` fails:
