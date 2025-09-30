@@ -1,5 +1,11 @@
 import sqlite3
 
+
+## TODO
+## Add function to get each individual column from events table by id
+## Add function to get all events and sort by chronological order before returning
+
+
 ## TESTING PURPOSES ONLY ##
 def create():
     ## TEMP
@@ -79,11 +85,19 @@ def read_event_by_id(event_id: int):
     # Fetch the result from the executed query
     event = cursor.fetchone()
 
+    # Check if event is active
+    if event is None:
+        print(f"No event found with eventID: {event_id}")
+    elif event[7] == "Inactive":  # Assuming eventAccess is the 8th column (index 7)
+        print(f"Event with eventID: {event_id} is Inactive.")
+        return None
+
     return event
 
 
 #create()
 print(read_events())
-print(read_event_by_id(1))
+print(read_event_by_id(3))
+print(read_event_by_id(2))
 
 sqliteConnection.close()
