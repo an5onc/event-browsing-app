@@ -34,7 +34,7 @@ LikedEvents INTEGER
 
 
 CREATE TABLE events (
-eventID INTEGER PRIMARY KEY,     
+eventID INTEGER PRIMARY KEY,
 creatorID INTEGER, 
 eventName VARCHAR(50) NOT NULL, 
 eventDescription VARCHAR(250) NOT NULL,         
