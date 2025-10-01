@@ -45,10 +45,7 @@ const HomePage: React.FC = () => {
           e.title.toLowerCase().includes(q) ||
           e.description.toLowerCase().includes(q) ||
           (e.location || '').toLowerCase().includes(q)) &&
-        (!filters.startDate && !filters.endDate ? true : inDateRange(e.startDate)) &&
-        (filters.online === null || (e.online ?? null) === filters.online) &&
-        (filters.priceMin == null || ((e.price as number | undefined) ?? 0) >= filters.priceMin) &&
-        (filters.priceMax == null || ((e.price as number | undefined) ?? 0) <= filters.priceMax)
+        (!filters.startDate && !filters.endDate ? true : inDateRange(e.startDate))
       );
 
     list.sort((a, b) => {
@@ -90,50 +87,52 @@ const HomePage: React.FC = () => {
   }, [events, categories]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-brand-light/20">
       {/* HERO */}
       <section className="relative isolate overflow-hidden">
         {/* soft gradient background */}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-50 via-sky-50 to-white" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-blue via-brand-blue to-brand-bluegrey/20" />
         {/* decorative logo watermark */}
         <img
           src={bearLogoTransparent}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[22rem] w-[22rem] opacity-15 blur-sm"
+          className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 -z-10 h-[28rem] w-[28rem] opacity-10 blur-[1px]"
         />
 
         <div className="mx-auto max-w-6xl px-4 pt-10 sm:pt-14 lg:pt-16">
           <div className="flex flex-col items-center text-center">
             <img src={bearLogo} alt="Bear logo" className="h-20 w-20 drop-shadow mb-5" />
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
               Browse Bear Events
             </h1>
-            <p className="mt-3 max-w-2xl text-base text-slate-600 sm:text-lg">
+            <div className="mt-2 h-1 w-24 rounded bg-brand-gold" />
+            <p className="mt-3 max-w-2xl text-base text-brand-butter sm:text-lg">
               Find what’s happening on campus—talks, hackathons, clubs, sports, and more.
             </p>
 
             {/* quick stats */}
-            <div className="mt-6 grid grid-cols-3 gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-md sm:gap-6 sm:px-6">
-              <div className="text-slate-700">
+            <div className="mt-6 grid grid-cols-3 gap-3 rounded-2xl border border-brand-gold/60 bg-white/95 px-4 py-3 text-sm shadow-md sm:gap-6 sm:px-6">
+              <div className="text-brand-blue">
                 <div className="font-semibold">{stats.total}</div>
-                <div className="text-slate-500">Upcoming events</div>
+                <div className="text-brand-smoke">Upcoming events</div>
               </div>
-              <div className="text-slate-700">
+              <div className="text-brand-blue">
                 <div className="font-semibold">{stats.uniqueCategories}</div>
-                <div className="text-slate-500">Categories</div>
+                <div className="text-brand-smoke">Categories</div>
               </div>
-              <div className="text-slate-700">
+              <div className="text-brand-blue">
                 <div className="font-semibold">{stats.nextFmt}</div>
-                <div className="text-slate-500">Next start</div>
+                <div className="text-brand-smoke">Next start</div>
               </div>
             </div>
 
             {/* search in hero -> controls filters.query */}
-            <div className="mt-8 w-full max-w-3xl rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg ring-1 ring-black/5 backdrop-blur">
+            <div className="mt-8 mb-4 w-full max-w-3xl rounded-2xl border border-brand-gold bg-white p-3 shadow-lg ring-1 ring-brand-gold/20">
               <SearchBar
                 value={filters.query}
-                onChange={(v) => setFilters((f) => ({ ...f, query: v }))}
+                onChange={(v: string) => setFilters((f) => ({ ...f, query: v }))
+                }
               />
             </div>
           </div>
@@ -141,10 +140,10 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* STICKY FILTER BAR */}
-      <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="sticky top-0 z-30 border-b-2 border-brand-gold bg-brand-blue/95 text-white backdrop-blur shadow">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            <div className="text-sm font-medium text-slate-700">Filters</div>
+            <div className="text-sm font-medium text-white/90">Filters</div>
             <div className="min-w-0 flex-1">
               <EventFilters
                 categories={categories}
@@ -154,7 +153,7 @@ const HomePage: React.FC = () => {
             </div>
             <button
               onClick={() => setFilters(initialFilters)}
-              className="ml-2 hidden shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 sm:block"
+              className="ml-2 hidden shrink-0 rounded-lg border border-white/30 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10 sm:block"
             >
               Clear
             </button>
@@ -167,12 +166,12 @@ const HomePage: React.FC = () => {
         {filteredEvents.length > 0 ? (
           <EventList events={filteredEvents} />
         ) : (
-          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="mt-8 rounded-2xl border border-brand-light bg-white p-8 text-center shadow-sm">
             <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-indigo-50 p-2">
               <img src={bearLogo} alt="" className="h-full w-full object-contain" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900">No matching events</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <h2 className="text-lg font-semibold text-brand-blue">No matching events</h2>
+            <p className="mt-1 text-sm text-brand-bluegrey">
               Try adjusting your search or filters—or create the first event now.
             </p>
           </div>

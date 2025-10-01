@@ -43,22 +43,22 @@ const EditEventPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold mb-4">Edit Event</h1>
+      <h1 className="text-3xl font-bold mb-4 text-brand-blue">Edit Event</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Title</label>
+          <label className="block text-sm font-medium text-brand-bluegrey">Title</label>
           <input
             type="text"
-            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             value={eventData.title}
             onChange={(e) => handleChange('title', e.target.value)}
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <label className="block text-sm font-medium text-brand-bluegrey">Description</label>
           <textarea
-            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             value={eventData.description}
             onChange={(e) => handleChange('description', e.target.value)}
             rows={4}
@@ -66,29 +66,29 @@ const EditEventPage: React.FC = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Date &amp; Time</label>
+          <label className="block text-sm font-medium text-brand-bluegrey">Date &amp; Time</label>
           <input
             type="datetime-local"
-            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             value={eventData.startDate}
             onChange={(e) => handleChange('startDate', e.target.value)}
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Location</label>
+          <label className="block text-sm font-medium text-brand-bluegrey">Location</label>
           <input
             type="text"
-            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             value={eventData.location}
             onChange={(e) => handleChange('location', e.target.value)}
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <label className="block text-sm font-medium text-brand-bluegrey">Category</label>
           <select
-            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             value={eventData.category}
             onChange={(e) => handleChange('category', e.target.value as Event['category'])}
           >
@@ -100,20 +100,20 @@ const EditEventPage: React.FC = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Capacity (optional)</label>
+          <label className="block text-sm font-medium text-brand-bluegrey">Capacity (optional)</label>
           <input
             type="number"
             min="1"
-            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             value={eventData.capacity ?? ''}
             onChange={(e) => handleChange('capacity', e.target.value === '' ? undefined : Number(e.target.value) as unknown as Event['capacity'])}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Image URL (optional)</label>
+          <label className="block text-sm font-medium text-brand-bluegrey">Image URL (optional)</label>
           <input
             type="url"
-            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             value={eventData.imageUrl ?? ''}
             onChange={(e) => handleChange('imageUrl', e.target.value || undefined)}
           />
@@ -121,7 +121,7 @@ const EditEventPage: React.FC = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-brand-gold text-brand-blue rounded-md hover:bg-brand-honeycomb"
           >
             Save Changes
           </button>

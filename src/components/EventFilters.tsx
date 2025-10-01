@@ -1,25 +1,97 @@
-/*This component is used to filter events based on various criteria in the event browsing app.
-This page should provide filter controls that allow users to narrow down the list of events based on 
-criteria like category, date range, location, or capacity. It should display a simple interface with 
-inputs such as dropdowns, checkboxes, or date pickers, and when a user changes any filter, the component 
-updates the visible events accordingly by passing the selected filter values back to the event list component 
-through props or context.*/
+import React from 'react';
 
-/**
- * Purpose: Describe what this file does in one line.
- *
- * Common references:
- * - Actions (like/RSVP): src/context/EventsContext.tsx
- * - Buttons: src/components/LikeButton.tsx, src/components/RSVPButton.tsx
- * - Event card: src/components/EventItem.tsx
- * - Pages: src/pages/EventList.tsx, src/pages/EventDetail.tsx, src/pages/CreateEvent.tsx
- * - Filters: src/components/Filters.tsx, src/components/SearchBar.tsx
- * - Routing: src/App.tsx
- *
- * Hint: If you need like or RSVP functionality, import from EventsContext
- * and/or reuse LikeButton or RSVPButton components.
- */
+export type SortKey = 'soon' | 'new' | 'popular';
 
+export type EventFiltersState = {
+  category: string | null;
+  query: string;
+  startDate?: string;
+  endDate?: string;
+  location: string;
+  withinMiles?: number;
+  priceMin?: number;
+  priceMax?: number;
+  online: boolean | null;
+  sort: SortKey;
+};
 
+export type EventFiltersProps = {
+  categories: string[];
+  value: EventFiltersState;
+  onChange: (next: EventFiltersState) => void;
+};
 
-// A.J. this page is assigned to you.
+const EventFilters: React.FC<EventFiltersProps> = ({ categories, value, onChange }) => {
+  const set = <K extends keyof EventFiltersState>(key: K, v: EventFiltersState[K]) =>
+    onChange({ ...value, [key]: v });
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <select
+        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        value={value.category ?? ''}
+        onChange={(e) => set('category', e.target.value || null)}
+      >
+        <option value="">All categories</option>
+        {categories.map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+        <option value="">Music</option>
+        <option value="1">Tech</option>
+        <option value="0">Arts</option>
+        <option value="0">Tech</option>
+        <option value="0">Food</option>
+      </select>
+
+      <input
+        type="date"
+        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        value={value.startDate ?? ''}
+        onChange={(e) => set('startDate', e.target.value || undefined)}
+      />
+      <input
+        type="date"
+        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        value={value.endDate ?? ''}
+        onChange={(e) => set('endDate', e.target.value || undefined)}
+      />
+
+      <select
+        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        value={value.online === null ? '' : value.online ? '1' : '0'}
+        onChange={(e) => set('online', e.target.value === '' ? null : e.target.value === '1')}
+      >
+        <option value="">All formats</option>
+        <option value="1">Online</option>
+        <option value="0">In person</option>
+      </select>
+
+      <input
+        type="number"
+        placeholder="Min $"
+        className="w-24 rounded border border-slate-300 px-2 py-1 text-sm"
+        value={value.priceMin ?? ''}
+        onChange={(e) => set('priceMin', e.target.value === '' ? undefined : Number(e.target.value))}
+      />
+      <input
+        type="number"
+        placeholder="Max $"
+        className="w-24 rounded border border-slate-300 px-2 py-1 text-sm"
+        value={value.priceMax ?? ''}
+        onChange={(e) => set('priceMax', e.target.value === '' ? undefined : Number(e.target.value))}
+      />
+
+      <select
+        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        value={value.sort}
+        onChange={(e) => set('sort', e.target.value as SortKey)}
+      >
+        <option value="soon">Starting soon</option>
+        <option value="new">Newest</option>
+        <option value="popular">Most liked</option>
+      </select>
+    </div>
+  );
+};
+
+export default EventFilters;

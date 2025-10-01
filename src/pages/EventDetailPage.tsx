@@ -48,8 +48,8 @@ const EventDetailPage: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
-      <p className="text-sm text-gray-600 mb-4">
+      <h1 className="text-3xl font-bold mb-2 text-brand-blue">{event.title}</h1>
+      <p className="text-sm text-brand-bluegrey mb-4">
         {new Date(event.startDate).toLocaleString()} • {event.location}
       </p>
       {event.imageUrl && (
@@ -59,18 +59,18 @@ const EventDetailPage: React.FC = () => {
           className="w-full h-64 object-cover rounded-lg mb-4"
         />
       )}
-      <p className="mb-4 whitespace-pre-line">{linkify(event.description)}</p>
+      <p className="mb-4 whitespace-pre-line text-brand-bluegrey">{linkify(event.description)}</p>
       <p className="mb-2">
-        <strong>Category:</strong> {event.category}
+        <strong className="text-brand-gold">Category:</strong> {event.category}
       </p>
       {event.capacity && (
         <p className="mb-2">
-          <strong>Capacity:</strong> {event.capacity}
+          <strong className="text-brand-gold">Capacity:</strong> {event.capacity}
         </p>
       )}
       {event.host && (
         <p className="mb-2">
-          <strong>Host:</strong> {event.host}
+          <strong className="text-brand-gold">Host:</strong> {event.host}
         </p>
       )}
       {event.ticketUrl && (
@@ -78,7 +78,7 @@ const EventDetailPage: React.FC = () => {
           href={event.ticketUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300/60 mb-2"
+          className="inline-flex items-center rounded-lg bg-brand-gold px-4 py-2 font-semibold text-brand-blue hover:bg-brand-honeycomb focus:outline-none focus:ring-4 focus:ring-brand-gold/60 mb-2"
         >
           Buy tickets
         </a>
@@ -86,19 +86,19 @@ const EventDetailPage: React.FC = () => {
       <div className="flex flex-wrap gap-2 mt-4">
         <button
           onClick={() => toggleLike(event.id)}
-          className={`px-3 py-1 rounded-full border flex items-center transition-colors ${event.userLiked ? 'bg-red-100 text-red-600' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+          className={`px-3 py-1 rounded-full border flex items-center transition-colors ${event.userLiked ? 'bg-red-100 text-red-600 border-red-200' : 'bg-white text-brand-bluegrey hover:bg-brand-light border-brand-light'}`}
         >
           ❤️ {event.likes}
         </button>
         <button
           onClick={() => toggleRsvp(event.id)}
-          className={`px-3 py-1 rounded-full border flex items-center transition-colors ${event.userRsvped ? 'bg-green-100 text-green-600' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+          className={`px-3 py-1 rounded-full border flex items-center transition-colors ${event.userRsvped ? 'bg-green-100 text-green-600 border-green-200' : 'bg-white text-brand-bluegrey hover:bg-brand-light border-brand-light'}`}
         >
           🎟️ {event.rsvps}
         </button>
         <button
           onClick={() => navigate(`/events/${event.id}/edit`)}
-          className="px-3 py-1 rounded-full border bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
+          className="px-3 py-1 rounded-full border bg-brand-butter text-brand-blue hover:bg-brand-gold"
         >
           Edit
         </button>

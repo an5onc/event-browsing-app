@@ -1,21 +1,29 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { EventsProvider } from './context/EventsContext';
-import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 
-
+// pages
+import HomePage from './pages/HomePage';
+import CreateEventPage from './pages/CreateEventPage';
+import EditEventPage from './pages/EditEventPage';
+import EventDetailPage from './pages/EventDetailPage';
+import Help from './components/help';
+import CreateAccountPage from './pages/CreateAccountPage';
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <EventsProvider>
-        <Navbar />
-        <Routes>
-          <Route path="" element={<Navigate to="/" replace />} />
-        </Routes>
-      </EventsProvider>
-    </AuthProvider>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/create" element={<CreateEventPage />} />
+        <Route path="/manage" element={<CreateAccountPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route path="/events/:id/edit" element={<EditEventPage />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 };
 
