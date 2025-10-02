@@ -1,7 +1,0 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-pydantic
-
-# When cloned, use this to install these libraries:
-# pip install -r requirements.txt
