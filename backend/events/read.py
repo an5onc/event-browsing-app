@@ -54,6 +54,10 @@ def read_events():
     """
 
     sqliteConnection = sqlite3.connect("EventPlannerDB.db")
+
+    # Get rows instead of tuples
+    sqliteConnection.row_factory = sqlite3.Row
+
     cursor = sqliteConnection.cursor()
 
     # SQL query to select all records from the events table
@@ -66,7 +70,9 @@ def read_events():
     events = cursor.fetchall()
 
     sqliteConnection.close()
-    return events
+
+    # Convert sqlite3.Row objects to dictionaries for easier access
+    return [dict(row) for row in events]
 
 
 def read_event_by_id(event_id: int):
@@ -76,6 +82,10 @@ def read_event_by_id(event_id: int):
     """
 
     sqliteConnection = sqlite3.connect("EventPlannerDB.db")
+
+    # Get rows instead of tuples
+    sqliteConnection.row_factory = sqlite3.Row
+
     cursor = sqliteConnection.cursor()
 
     # SQL query to select a specific record from the events table by eventID
@@ -90,12 +100,14 @@ def read_event_by_id(event_id: int):
     # Check if event is active
     if event is None:
         print(f"No event found with eventID: {event_id}")
-    elif event[7] == "Inactive":  # Assuming eventAccess is the 8th column (index 7)
+
+    elif event["eventAccess"] == "Inactive": 
         print(f"Event with eventID: {event_id} is Inactive.")
         return None
 
     sqliteConnection.close()
-    return event
+
+    return dict(event)
 
 
 #create()
