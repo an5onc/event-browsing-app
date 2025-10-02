@@ -1,0 +1,33 @@
+import sqlite3
+
+def soft_delete_event(eventID: int, creatorID: int):
+    """
+    Soft delete an event:
+        
+Marks the event as deleted (isDeleted = 1).
+Removes all RSVPs tied to that event. 
+Keeps the event record in the database for history/audit.
+"""
+
+    try:
+        sqliteConnection = sqlite3.connect("EventPlannerDB.db")
+        cursor = sqliteConnection.cursor()
+        cursor.execute("DELETE FROM RSVPed_Events WHERE eventID = ?", (eventID,))
+        cursor.execute(
+            """
+            UPDATE events
+            SET isDeleted = 1
+            WHERE eventID = ? AND creatorID = ? AND isDeleted = 0
+            """, (eventID, creatorID))
+        sqliteConnection.commit()
+
+        if cursor.rowcount > 0:
+            print(f"Event {eventID} soft deleted (RSVPs removed, event flagged).")
+        else: 
+            print("Event not found, already deleted, or not owned by this creator.")
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
