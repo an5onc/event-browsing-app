@@ -13,6 +13,12 @@ cursor = sqliteConnection.cursor()
 # Location to be an enum for places on campus, vs a string, which allows for more specific placing.
 #       Should location be as detailed as listing room when inside a building?
 
+# Drop old tables if they exist (for clean re-runs during development, running this will create a "fresh" database for testing)
+cursor.execute("DROP TABLE IF EXISTS Likes;")
+cursor.execute("DROP TABLE IF EXISTS RSVPs;")
+cursor.execute("DROP TABLE IF EXISTS events;")
+cursor.execute("DROP TABLE IF EXISTS accounts;")
+
 sql_command = """
 DROP DATABASE IF EXISTS EventPlannerDB;
 CREATE DATABASE IF EXISTS EventPlannerDB;
@@ -84,3 +90,5 @@ cursor.execute(sql_command)
 
 sqliteConnection.commit()
 sqliteConnection.close()
+
+print("Database and tables created successfully!")
