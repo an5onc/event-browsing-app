@@ -10,6 +10,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import Help from './components/help';
 import CreateAccountPage from './pages/CreateAccountPage';
 import CalendarPage from './pages/CalendarPage';
+import MyProfile from './pages/MyProfile';
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,7 @@ const App: React.FC = () => {
         <Route path="/events/:id/edit" element={<EditEventPage />} />
         <Route path="/help" element={<Help />} />
         <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/profile" element={<MyProfile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
