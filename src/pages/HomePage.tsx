@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 // Logos
 import bearLogo from '../assets/images/bearlogo.png';
-import bearLogoTransparent from '../assets/images/bearlogotransparent.png';
+import uncocampus from '../assets/images/uncocampus.jpg';
 
 const initialFilters: EventFiltersState = {
   category: null,
@@ -94,16 +94,16 @@ const HomePage: React.FC = () => {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-blue via-brand-blue to-brand-bluegrey/20" />
         {/* decorative logo watermark */}
         <img
-          src={bearLogoTransparent}
+          src={uncocampus}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 -z-10 h-[28rem] w-[28rem] opacity-10 blur-[1px]"
+          className="pointer-events-none absolute inset-0 -z-10 w-full h-full object-cover opacity-30"
         />
 
         <div className="mx-auto max-w-6xl px-4 pt-10 sm:pt-14 lg:pt-16">
           <div className="flex flex-col items-center text-center">
             <img src={bearLogo} alt="Bear logo" className="h-20 w-20 drop-shadow mb-5" />
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-black sm:text-5xl">
               Browse Bear Events
             </h1>
             <div className="mt-2 h-1 w-24 rounded bg-brand-gold" />
@@ -143,7 +143,7 @@ const HomePage: React.FC = () => {
       <div className="sticky top-0 z-30 border-b-2 border-brand-gold bg-brand-blue/95 text-white backdrop-blur shadow">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            <div className="text-sm font-medium text-white/90">Filters</div>
+            <div className="text-sm font-medium text-black/90">Filters</div>
             <div className="min-w-0 flex-1">
               <EventFilters
                 categories={categories}
@@ -153,7 +153,7 @@ const HomePage: React.FC = () => {
             </div>
             <button
               onClick={() => setFilters(initialFilters)}
-              className="ml-2 hidden shrink-0 rounded-lg border border-white/30 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10 sm:block"
+              className="ml-3 shrink-0 rounded-lg border border-white/30 px-3 py-1.5 text-xs font-medium text-black hover:bg-white/10"
             >
               Clear
             </button>

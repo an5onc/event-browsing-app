@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 export interface CreateAccountValues {
   email: string;
@@ -32,6 +32,8 @@ const sendVerification = async (email: string) => {
 };
 
 const CreateAccountForm: React.FC<CreateAccountProps> = ({ onSuccess, onCancel, className = '' }) => {
+  const location = useLocation();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -43,6 +45,16 @@ const CreateAccountForm: React.FC<CreateAccountProps> = ({ onSuccess, onCancel, 
 
   const [emailErr, setEmailErr] = useState<string | null>(null);
   const [passwordErr, setPasswordErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    // If navigation provided a freshSignup flag, clear any previous values
+    // and prevent showing prior credentials.
+    if ((location.state as any)?.freshSignup) {
+      setEmail('');
+      setPassword('');
+      setConfirm('');
+    }
+  }, [location.state]);
 
   const pwRules = {
     length: password.length >= 8,
@@ -156,7 +168,7 @@ const CreateAccountForm: React.FC<CreateAccountProps> = ({ onSuccess, onCancel, 
   }
 
   return (
-    <form onSubmit={onSubmit} className={`max-w-md ${className}`} noValidate>
+    <form onSubmit={onSubmit} className={`max-w-md ${className}`} noValidate autoComplete="off">
 
       {error && (
         <div className="mb-4 rounded border border-brand-gold/60 bg-brand-butter p-3 text-brand-blue">{error}</div>
@@ -166,7 +178,9 @@ const CreateAccountForm: React.FC<CreateAccountProps> = ({ onSuccess, onCancel, 
         <label htmlFor="email" className="block text-sm font-medium mb-1 text-brand-bluegrey">Email</label>
         <input
           id="email"
+          name="signup-email"
           type="email"
+          autoComplete="off"
           className="w-full rounded border border-brand-bluegrey px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
           placeholder="you@bears.unco.edu"
           value={email}
@@ -181,7 +195,9 @@ const CreateAccountForm: React.FC<CreateAccountProps> = ({ onSuccess, onCancel, 
         <div className="relative">
           <input
             id="password"
+            name="new-password"
             type={showPwd ? 'text' : 'password'}
+            autoComplete="new-password"
             className="w-full rounded border border-brand-bluegrey px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
             placeholder="At least 8 characters"
             value={password}
@@ -211,7 +227,9 @@ const CreateAccountForm: React.FC<CreateAccountProps> = ({ onSuccess, onCancel, 
         <label htmlFor="confirm" className="block text-sm font-medium mb-1 text-brand-bluegrey">Confirm password</label>
         <input
           id="confirm"
+          name="new-password-confirm"
           type={showPwd ? 'text' : 'password'}
+          autoComplete="new-password"
           className="w-full rounded border border-brand-bluegrey px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
           value={confirm}
           onChange={(e) => { setConfirm(e.target.value); }}

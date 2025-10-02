@@ -34,17 +34,17 @@ import CreateIcon from "../assets/images/CreateIcon.png"
 import EventsIcon from "../assets/images/EventsIcon.png"
 import HelpIcon from "../assets/images/HelpIcon.png"
 import ManageIcon from "../assets/images/ManageIcon.png"
-import bearlogotransparent from "../assets/images/bearlogotransparent.png"
+import bear from "../assets/images/bear.png"
 
 export function Navbar() {
-    const linkBase = "flex items-center gap-1 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg";
-    const linkActive = "bg-brand-gold text-brand-blue rounded-lg";
+    const linkBase = "flex items-center gap-1 px-3 py-2 text-white/90 hover:text-[#ffcc00] hover:bg-white/10 rounded-lg";
+    const linkActive = "bg-[#ffcc00] text-[#002855] rounded-lg";
 
     return (
-        <nav className="flex justify-between items-center px-6 py-3 bg-brand-blue text-white shadow-md border-b-2 border-brand-gold">
+        <nav className="flex justify-between items-center px-6 py-3 bg-[#002855] text-white shadow-md border-b-2 border-[#ffcc00]">
             {/* Left */}
             <NavLink to = "/events" className = "flex items-center">
-                <img src = {bearlogotransparent} alt = "Logo" className = "h-10" />
+                <img src = {bear} alt = "Logo" className = "h-10" />
             </NavLink>
 
             {/* Center */}
@@ -59,24 +59,26 @@ export function Navbar() {
                     <span>Calendar</span>
                 </NavLink>
 
-                <NavLink to = "/manage" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>
+                <NavLink
+                    to="/manage"
+                    state={{ freshSignup: true }}
+                    className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
+                >
                     <img src = {ManageIcon} alt = "Manage" className = "h-4" />
-                    <span>Manage</span>
+                    <span>Sign Up</span>
                 </NavLink>
             </div>
 
             {/* Right */}
             <div className = "flex gap-4">
-                <NavLink to = "/create" className="flex items-center rounded-full p-1 hover:bg-white/10">
-                    <img src = {CreateIcon} alt = "Create" className = "h-4 opacity-90" />
+                <NavLink to="/create" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>
+                    <span>Create</span>
                 </NavLink>
-
-                <NavLink to = "/help" className="flex items-center rounded-full p-1 hover:bg-white/10">
-                    <img src = {HelpIcon} alt = "Help" className = "h-4 opacity-90" />
+                <NavLink to="/help" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>
+                    <span>Help</span>
                 </NavLink>
-
-                <NavLink to = "/profile" className="flex items-center rounded-full p-1 hover:bg-white/10">
-                    <img src = {AccountIcon} alt = "Profile" className = "h-5 opacity-90" />
+                <NavLink to="/profile" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>
+                    <span>Profile</span>
                 </NavLink>
             </div>
         </nav>

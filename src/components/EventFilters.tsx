@@ -28,7 +28,7 @@ const EventFilters: React.FC<EventFiltersProps> = ({ categories, value, onChange
   return (
     <div className="flex flex-wrap items-center gap-2">
       <select
-        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        className="rounded border border-slate-800 px-2 py-1 text-sm text-slate-800"
         value={value.category ?? ''}
         onChange={(e) => set('category', e.target.value || null)}
       >
@@ -45,19 +45,19 @@ const EventFilters: React.FC<EventFiltersProps> = ({ categories, value, onChange
 
       <input
         type="date"
-        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        className="rounded border border-slate-800 px-2 py-1 text-sm text-slate-800"
         value={value.startDate ?? ''}
         onChange={(e) => set('startDate', e.target.value || undefined)}
       />
       <input
         type="date"
-        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        className="rounded border border-slate-800 px-2 py-1 text-sm text-slate-800"
         value={value.endDate ?? ''}
         onChange={(e) => set('endDate', e.target.value || undefined)}
       />
 
       <select
-        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        className="rounded border border-slate-800 px-2 py-1 text-sm text-slate-800"
         value={value.online === null ? '' : value.online ? '1' : '0'}
         onChange={(e) => set('online', e.target.value === '' ? null : e.target.value === '1')}
       >
@@ -69,20 +69,20 @@ const EventFilters: React.FC<EventFiltersProps> = ({ categories, value, onChange
       <input
         type="number"
         placeholder="Min $"
-        className="w-24 rounded border border-slate-300 px-2 py-1 text-sm"
+        className="w-24 rounded border border-slate-800 px-2 py-1 text-sm text-slate-800"
         value={value.priceMin ?? ''}
         onChange={(e) => set('priceMin', e.target.value === '' ? undefined : Number(e.target.value))}
       />
       <input
         type="number"
         placeholder="Max $"
-        className="w-24 rounded border border-slate-300 px-2 py-1 text-sm"
+        className="w-24 rounded border border-slate-800 px-2 py-1 text-sm text-slate-800"
         value={value.priceMax ?? ''}
         onChange={(e) => set('priceMax', e.target.value === '' ? undefined : Number(e.target.value))}
       />
 
       <select
-        className="rounded border border-slate-300 px-2 py-1 text-sm"
+        className="rounded border border-slate-800 px-2 py-1 text-sm text-slate-800"
         value={value.sort}
         onChange={(e) => set('sort', e.target.value as SortKey)}
       >
