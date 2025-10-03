@@ -6,7 +6,6 @@ DB_NAME = "EventPlannerDB.db"
 def get_connection():
     """
     Helper function to connect to the SQLite database with foreign key constraints enabled.
-    - SQLite does not enforce foreign keys by default, so we explicitly enable them.
     - Returns a connection object that can be used with 'with' blocks.
     """
     conn = sqlite3.connect(DB_NAME)
