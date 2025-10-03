@@ -3,7 +3,8 @@ import sqlite3
 
 ## TODO
 ## Add function to get each individual column from events table by id
-## Add function to get all events and sort by chronological order before returning
+## FOR SEARCHING TEAM: Add function to get all events and sort by chronological order before returning
+## FOR SEARCHING TEAM: Add function that returns all events with a given type
 
 
 ## TESTING PURPOSES ONLY ##
@@ -43,12 +44,6 @@ def create():
     ## TEMP
 ## ^^^ TESTING PURPOSES ONLY ^^^ ##
 
-# Connect to the SQLite database
-# If the file does not exist, it will be created automatically
-sqliteConnection = sqlite3.connect("EventPlannerDB.db")
-
-# Create cursor object to interact with the database
-cursor = sqliteConnection.cursor()
 
 # ----------------------------- READ EVENTS ----------------------------- #
 # Function to read all events from the events table
@@ -57,6 +52,13 @@ def read_events():
     Reads all event records from the events table.
     Returns a list of tuples, each representing an event record.
     """
+
+    sqliteConnection = sqlite3.connect("EventPlannerDB.db")
+
+    # Get rows instead of tuples
+    sqliteConnection.row_factory = sqlite3.Row
+
+    cursor = sqliteConnection.cursor()
 
     # SQL query to select all records from the events table
     sql_command = "SELECT * FROM events"
@@ -67,7 +69,10 @@ def read_events():
     # Fetch all results from the executed query
     events = cursor.fetchall()
 
-    return events
+    sqliteConnection.close()
+
+    # Convert sqlite3.Row objects to dictionaries for easier access
+    return [dict(row) for row in events]
 
 
 def read_event_by_id(event_id: int):
@@ -75,6 +80,13 @@ def read_event_by_id(event_id: int):
     Reads a specific event record from the events table by eventID.
     Returns a tuple representing the event record, or None if not found.
     """
+
+    sqliteConnection = sqlite3.connect("EventPlannerDB.db")
+
+    # Get rows instead of tuples
+    sqliteConnection.row_factory = sqlite3.Row
+
+    cursor = sqliteConnection.cursor()
 
     # SQL query to select a specific record from the events table by eventID
     sql_command = "SELECT * FROM events WHERE eventID = ?"
@@ -88,16 +100,17 @@ def read_event_by_id(event_id: int):
     # Check if event is active
     if event is None:
         print(f"No event found with eventID: {event_id}")
-    elif event[7] == "Inactive":  # Assuming eventAccess is the 8th column (index 7)
+
+    elif event["eventAccess"] == "Inactive": 
         print(f"Event with eventID: {event_id} is Inactive.")
         return None
 
-    return event
+    sqliteConnection.close()
+
+    return dict(event)
 
 
 #create()
 print(read_events())
 print(read_event_by_id(3))
 print(read_event_by_id(2))
-
-sqliteConnection.close()
