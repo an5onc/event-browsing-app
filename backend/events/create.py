@@ -7,6 +7,80 @@ sqliteConnection = sqlite3.connect("EventPlannerDB.db")
 # Create cursor object to interact with the database
 cursor = sqliteConnection.cursor()
 
+
+# New create event function with corrected parameters and added fields
+def create_event_2(
+    creatorID: int,
+    creatorType: str,
+    eventName: str,
+    eventDescription: str,
+    location: str,
+    images: bytes,
+    eventType: str,
+    eventAccess: str,
+    startDateTime: str,
+    endDateTime: str,
+    numberLikes: int,
+    rsvpRequired: int,
+    isPriced: int,
+    cost: float,
+):
+    sqliteConnection = sqlite3.connect("EventPlannerDB.db")
+
+    # Create cursor object to interact with the database
+    cursor = sqliteConnection.cursor()
+
+    """
+    Inserts a new event record into the events table.
+    Parameters must be passed in from the frontend (React).
+    """
+
+    # Use parameterized query (?) to prevent SQL injection
+    sql_command = """
+        INSERT INTO events (
+            creatorID,
+            creatorType,
+            eventName,
+            eventDescription,
+            location,
+            images,
+            eventType,
+            eventAccess,
+            startDateTime,
+            endDateTime,
+            numberLikes,
+            rsvpRequired,
+            isPriced,
+            cost
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    values = (
+        creatorID,
+        creatorType,
+        eventName,
+        eventDescription,
+        location,
+        images,
+        eventType,
+        eventAccess,
+        startDateTime,
+        endDateTime,
+        numberLikes,
+        rsvpRequired,
+        isPriced,
+        cost,
+    )
+
+    try:
+        cursor.execute(sql_command, values)
+        sqliteConnection.commit()
+        print("Event created successfully.")
+    except Exception as e:
+        print(f"SQLite error while inserting event: {e}")
+
+    sqliteConnection.close()
+
 # ----------------------------- INSERT EVENT ----------------------------- #
 # Function to insert a new event into the events table
 def create_event(

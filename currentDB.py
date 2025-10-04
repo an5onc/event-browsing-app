@@ -20,13 +20,10 @@ cursor.execute("DROP TABLE IF EXISTS events;")
 cursor.execute("DROP TABLE IF EXISTS accounts;")
 
 sql_command = """
-DROP DATABASE IF EXISTS EventPlannerDB;
-CREATE DATABASE IF EXISTS EventPlannerDB;
-USE EventPlannerDB;
 
 CREATE TABLE accounts (
 accountID INTEGER PRIMARY KEY, 
-accountType TEXT CHECK(creatorType IN ('Student','Faculty')),
+accountType TEXT CHECK(accountType IN ('Student','Faculty')),
 username TEXT UNIQUE,
 password TEXT NOT NULL, 
 recoveryEmail TEXT NOT NULL,
@@ -37,6 +34,7 @@ verificationExpiry DATETIME
 
 
 );
+
 
 
 CREATE TABLE events (
@@ -86,7 +84,7 @@ FOREIGN KEY (creatorID) REFERENCES events(creatorID),
 FOREIGN KEY (invitedID) REFERENCES accounts(accountID)
 )
 """
-cursor.execute(sql_command)
+cursor.executescript(sql_command)
 
 sqliteConnection.commit()
 sqliteConnection.close()
