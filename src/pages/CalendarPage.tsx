@@ -203,7 +203,7 @@ export default function CalendarPage() {
           Past Events
         </h2>
         {pastEvents.length === 0 ? (
-          <p className = "text-slate-500">No pastevents.</p>
+          <p className = "text-slate-500">No past events.</p>
         ) : (
           <ul className = "divide-y divide-slate-300">
             {pastEvents.map((evt: any) => (
