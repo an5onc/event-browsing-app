@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useEvents } from "../context/EventsContext";
+import {Link } from "react-router-dom";
 
 type CalendarEvent = {
   id: string;
@@ -78,8 +79,8 @@ export default function CalendarPage() {
     for (let day = 1; day <= daysInMonth; day++) {
       arr.push(new Date(monthStart.getFullYear(), monthStart.getMonth(), day));
     }
-    // Trailing days to complete 42 cells
-    while (arr.length < 42) {
+    // Trailing days to fill complete weeks
+    while (arr.length % 7 !== 0) {
       const last = arr[arr.length - 1];
       const next = new Date(last);
       next.setDate(next.getDate() + 1);
@@ -91,8 +92,17 @@ export default function CalendarPage() {
   const monthLabel = viewDate.toLocaleString(undefined, { month: "long", year: "numeric" });
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+  // Split events into past/upcoming
+  const upcomingEvents = (events ?? []).filter(
+    (evt: any) => new Date(evt.date) >= today
+  );
+  const pastEvents = (events ?? []).filter(
+    (evt: any) => new Date(evt.date) < today
+  );
+  
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
+      {/* Header */}
       <header className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-[#002855]">{monthLabel}</h1>
         <div className="flex items-center gap-2">
@@ -117,6 +127,7 @@ export default function CalendarPage() {
         </div>
       </header>
 
+      {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-px rounded-lg border border-slate-200 bg-slate-200">
         {weekDays.map((wd) => (
           <div key={wd} className="bg-white px-2 py-2 text-center text-xs font-medium uppercase text-slate-500">
@@ -144,13 +155,14 @@ export default function CalendarPage() {
               </div>
               <div className="flex flex-col gap-1">
                 {dayEvents.slice(0, 3).map((evt) => (
-                  <div
+                  <Link
                     key={evt.id}
+                    to={`/events/${evt.id}`} // <-- route to event detail
                     className="truncate rounded border border-[#ffcc00]/50 bg-[#ffcc00]/10 px-1.5 py-1 text-xs text-[#002855]"
                     title={evt.title}
                   >
                     {evt.title}
-                  </div>
+                  </Link>
                 ))}
                 {dayEvents.length > 3 && (
                   <div className="text-[11px] text-slate-500">+{dayEvents.length - 3} more</div>
@@ -161,11 +173,52 @@ export default function CalendarPage() {
         })}
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 text-sm text-slate-600">
-        <span className="mr-2 inline-block rounded border border-[#ffcc00]/50 bg-[#ffcc00]/10 px-2 py-1 text-[#002855]">
-          Event
-        </span>
+      {/* Upcoming Events */}
+      <div className = "mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow">
+        <h2 className = "mb-2 text-lg font-semibold text=[#002855]">
+          Upcoming Events
+        </h2>
+        {upcomingEvents.length === 0 ? (
+          <p className = "text-slate-500">No upcoming events.</p>
+        ) : (
+          <ul className = "divide-y divide-slate-200">
+            {upcomingEvents.map((evt: any) => (
+              <li key = {evt.id} className = "py-2">
+                <Link 
+                  to = {`/events/${evt.id}`}
+                  className = "block hover:text-[#ff9900]"
+                >
+                  <div className = "font-medium">{evt.title}</div>
+                  <div className = "text-sm text-slate-500">{evt.date}</div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Past Events */}
+      <div className = "mt-6 rounded-lg border border-slate-200 bg-slate-100 p-4 shadow">
+        <h2 className ="mb-2 text-lg font-semibold text-slate-600">
+          Past Events
+        </h2>
+        {pastEvents.length === 0 ? (
+          <p className = "text-slate-500">No pastevents.</p>
+        ) : (
+          <ul className = "divide-y divide-slate-300">
+            {pastEvents.map((evt: any) => (
+              <li key = {evt.id} className = "py-2 opacity-70">
+                <Link
+                  to = {`/events/${evt.id}`}
+                  className = "block hover:text-slate-700"
+                  >
+                    <div className = "font-medium">{evt.title}</div>
+                    <div className = "text-sm text-slate-500">{evt.date}</div>
+                  </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
