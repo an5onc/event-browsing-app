@@ -182,7 +182,7 @@ const CreateAccountForm: React.FC<CreateAccountProps> = ({ onSuccess, onCancel, 
           type="email"
           autoComplete="off"
           className="w-full rounded border border-brand-bluegrey px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-          placeholder="you@bears.unco.edu"
+          placeholder="you@bears.unco.edu or you@unco.edu"
           value={email}
           onChange={(e) => { setEmail(e.target.value); setEmailErr(null); }}
           required
