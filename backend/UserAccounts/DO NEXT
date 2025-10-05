@@ -1,0 +1,36 @@
+# ========== SHORT TERM =================================================
+# 1. add location
+# 2. fix gpt rsvp tables
+# 3. dateTIME
+# 4. staging server and live server as parts of the website domain, 
+#    Doesn't need to be its own thing
+
+# 3. double check how to use primary key (eventID, userID)
+#    look into if it would be harder to have 2 value primary key 
+#    OR, if we concat eventID and userID into one value, then parse from there
+
+# ========== MEDIUM TERM ================================================= 
+# 2. Accounts Methods
+# 3. DB Roles ????
+
+
+# ========== EVENTUALLY ===================================================
+# adding faculty verification, allowing for faculty only events / visibillity 
+
+
+
+# ========== COMPLETED ================================================== 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+#
