@@ -1,136 +1,138 @@
-import sqlite3      # sql injection software
-import re           # regex for email verification
-import bcrypt       # encryption for password hash / secure login
+"""
+=========================================================
+USER ACCOUNT MANAGEMENT (accounts table)
+=========================================================
 
+Purpose:
+- Handles account creation, login, verification, and deletion.
+- Includes security features:
+  - bcrypt password hashing
+  - verification codes (6-digit, expiring in 15 min)
+  - email domain validation for Student vs Faculty.
 
-sqliteConnection = sqlite3.connect('EventPlannerDB.db')
-cursor = sqliteConnection.cursor()
+What Changed:
+- Removed placeholder code and raw SQL f-strings.
+- Secure password hashing + verification added.
+- Email checks via regex (bears.unco.edu for students, unco.edu for faculty).
+- Added account verification flow (generate code, validate, mark verified).
+- Added login with bcrypt check + verification status.
+- Added delete_account helper.
 
-# NEED TO ASK HOW MUCH OF THIS LOGIC IS ALREADY GOING TO BE HANDLED BY THE FRONT END
+Frontend Use:
+- Register screen → create_account()
+- Login screen → login()
+- Email verification screen → verify_code()
+- Account settings → delete_account()
+"""
+
+import sqlite3
+import re
+import bcrypt
+import random
+from datetime import datetime, timedelta
+
+# Path to SQLite DB
+DB_PATH = "../db/EventPlannerDB.db"
+
 class userAccount:
-    def __init__(self, BearID, username, userPass, email):
-        
-        #username = verifyUsernameUnique(user)
-        
-
-        password = userPass
-        # add password to DB
-        
-
-        #VERIFY EMAIL IS REAL
-        recoveryEmail = self.verifyEmailValid(email)
-
-
-
-        sql_command = """
-        INSERT INTO accounts VALUES (?, ?, ?, ?, ?, ?, ?)
+    # ===========================================================
+    # Account Creation
+    # ===========================================================
+    def create_account(self, accountID, accountType, password, email):
         """
-        # last three are RSVPd events, Liked Events, and created events respectively 
-        # All are empty on account creation
-
-        cursor.execute(sql_command, (BearID, username, password, recoveryEmail, None, None, None))
-        sqliteConnection.commit()
-
-    def getAccountsBearID(self):
-        # WHEN FINISHED, NEED TO UPDATE ALL PLACES WHERE IT IS CALLED, 
-        # PROBABLY NEED TO ASK FRONT END 
-        # HOW WE WILL KNOW THE ARE CONNECTED TO SERVER / USER IS LOGGED IN
-
-        return
-
-
-    def verifyUsernameUnique(self, username):
-        # VERIFY USERNAME IS UNIQUE
-        # user inputs their email
-        # call to database to check uniqueness
-        # while loop until they submit a valid one
-
-
-        #?? need while loop to give any number of attempts to input a valid
-
-
-        
-        return
-    
-    def verifyEmailValid(self, email):
-        #while loop until they submit a valid email
-
-        #OPTION A) run through a regex to that it has a valid format for a unco email
-        
-
-
-
-        #OPTION B) send a verification email (dont think this is feasible, I think this needs a server to recieve the verification, and idk how to)
-
-        pass
-
-    def changePass(self, newPass):
-        #assuming that it has already been verified that this is a valid password change attempt
-        userID = self.getAccountsBearID()
-
-        sql_command = """
-        UPDATE accounts
-        SET password = ?
-        WHERE BearID = ?;
+        Create a new account:
+        - Validates email domain by accountType.
+        - Hashes password with bcrypt.
+        - Generates verification code + expiry.
+        - Inserts into accounts table.
+        Returns: verification code (string).
         """
+        if accountType == "Student" and not re.match(r".+@bears\.unco\.edu$", email):
+            raise ValueError("Students must use a bears.unco.edu email")
+        if accountType == "Faculty" and not re.match(r".+@unco\.edu$", email):
+            raise ValueError("Faculty must use a unco.edu email")
 
-        cursor.execute(sql_command, (newPass, userID))
-        sqliteConnection.commit()
+        hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+        code = str(random.randint(100000, 999999))
+        expiry = (datetime.now() + timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
 
-    def changeEmail(self, newEmail):
-        email = self.verifyEmailValid(newEmail)
-        userID = self.getAccountsBearID()
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO accounts (accountID, accountType, email, password, isVerified, verificationCode, verificationExpiry)
+                VALUES (?, ?, ?, ?, 0, ?, ?)
+            """, (accountID, accountType, email, hashed, code, expiry))
+            conn.commit()
+        return code
 
-        sql_command = """
-        UPDATE accounts
-        SET recoveryEmail = ?
-        WHERE BearID = ?;
+    # ===========================================================
+    # Login
+    # ===========================================================
+    def login(self, email, inputPass):
         """
-
-        cursor.execute(sql_command, (email, userID))
-        sqliteConnection.commit()
-
-
-    def getEncryptedPassHash(self, inputBearID):
-        #used when logging in, to check user input password attempt against the stored password
-        sql_command = """
-        SELECT password
-        FROM accounts
-        WHERE BearID = ?;
+        Attempt login with email + password.
+        - Verifies bcrypt hash.
+        - Fails if not verified yet.
+        Returns: (True, accountID) or (False, reason).
         """
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT accountID, password, isVerified FROM accounts WHERE email = ?", (email,))
+            row = cur.fetchone()
 
-        cursor.execute(sql_command, (inputBearID,))
-        result = cursor.fetchall()
-        if not result:
-            return None
-        password = result[0][0]
+        if row is None:
+            return False, "No such account"
 
-        salt = bcrypt.gensalt()
+        accountID, storedHash, isVerified = row
+        if bcrypt.checkpw(inputPass.encode("utf-8"), storedHash):
+            if not isVerified:
+                return False, "Account not verified"
+            return True, accountID
+        return False, "Incorrect password"
 
-        #hashed = bcrypt.hashpw(password, salt)
-        return bcrypt.hashpw(password, salt)
-        
-
-    def attemptingLogin(self, inputName, inputPass):
-        #for loop, only given three tries to submit a valid password
-        #IS THIS MY JOB??
-        sql_command = """
-        SELECT BearID
-        FROM accounts
-        WHERE username = ?;
+    # ===========================================================
+    # Verify Code
+    # ===========================================================
+    def verify_code(self, accountID, codeInput):
         """
-        cursor.execute(sql_command, (inputName,))
-        result = cursor.fetchall()
-        if not result:
-            return None
-        BearID = result[0][0]
+        Verify an account using the 6-digit code.
+        - Fails if code expired, invalid, or account missing.
+        - On success: marks account as verified in DB.
+        """
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT verificationCode, verificationExpiry
+                FROM accounts
+                WHERE accountID = ?
+            """, (accountID,))
+            row = cur.fetchone()
 
-        hashedPass = self.getEncryptedPassHash(BearID)
+        if not row:
+            return False, "Account not found"
 
-        #NOT FINISHED, UNSURE IF I CAN SPLIT THIS INTO TWO METHODS. 
-        #MAY NEED TO EITHER PASS IN THE SALT, OR COMBINE WITH getPassHash
+        dbCode, expiry = row
+        if datetime.now() > datetime.strptime(expiry, "%Y-%m-%d %H:%M:%S"):
+            return False, "Code expired"
+        if dbCode != codeInput:
+            return False, "Invalid code"
 
-        return #WTF DO I RETURN
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE accounts
+                SET isVerified = 1, verificationCode = NULL, verificationExpiry = NULL
+                WHERE accountID = ?
+            """, (accountID,))
+            conn.commit()
+        return True, "Verified successfully"
 
-    def deleteAccount(self):
-        pass
+    # ===========================================================
+    # Delete Account
+    # ===========================================================
+    def delete_account(self, accountID):
+        """Permanently delete account from DB (careful: no undo)."""
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM accounts WHERE accountID = ?", (accountID,))
+            conn.commit()

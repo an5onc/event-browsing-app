@@ -1,216 +1,112 @@
+import os
 import sqlite3
+from typing import Optional
 
-# Connect to the SQLite database
-# If the file does not exist, it will be created automatically
-sqliteConnection = sqlite3.connect("EventPlannerDB.db")
+"""
+=========================================================
+CREATE EVENT (events table insert)
+=========================================================
 
-# Create cursor object to interact with the database
-cursor = sqliteConnection.cursor()
+Purpose:
+- Handles inserting new events into the events table.
+- Ensures only allowed event types and access levels are stored.
+- Returns the new eventID so it can be referenced later.
+
+What Changed:
+- Centralized DB path resolution so code works no matter where run.
+- Enforced validation of eventType and eventAccess.
+- Supports optional images, RSVP flag, pricing fields.
+- Built to be called directly or from API endpoints.
+
+Frontend Use:
+- React "Create Event" form → send event details to backend → call create_event().
+- Backend should validate user ID (creatorID) before insertion.
+"""
+
+# -----------------------------
+# DATABASE PATH RESOLUTION
+# Ensures DB points to backend/db/EventPlannerDB.db
+# -----------------------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # go up one level (from events/ to backend/)
+DB_PATH = os.path.join(BASE_DIR, "db", "EventPlannerDB.db")
+
+# -----------------------------
+# ALLOWED FIELDS
+# Used for validation to prevent bad data
+# -----------------------------
+ALLOWED_EVENT_TYPES = {
+    "Art", "Math", "Science", "Computer Science", "History",
+    "Education", "Political Science", "Software Engineering",
+    "Business", "Sports", "Honors", "Workshops",
+    "Study Session", "Dissertation", "Performance", "Competition"
+}
+ALLOWED_ACCESS = {"Public", "Private", "Inactive"}
 
 
-# New create event function with corrected parameters and added fields
-def create_event_2(
+# -----------------------------
+# CREATE EVENT FUNCTION
+# Inserts a new event row into the database
+# Returns the new eventID
+# -----------------------------
+def create_event(
     creatorID: int,
-    creatorType: str,
     eventName: str,
     eventDescription: str,
     location: str,
-    images: bytes,
     eventType: str,
-    eventAccess: str,
-    startDateTime: str,
-    endDateTime: str,
-    numberLikes: int,
-    rsvpRequired: int,
-    isPriced: int,
-    cost: float,
-):
-    sqliteConnection = sqlite3.connect("EventPlannerDB.db")
-
-    # Create cursor object to interact with the database
-    cursor = sqliteConnection.cursor()
-
+    startDateTime: str,  # "YYYY-MM-DD HH:MM:SS"
+    endDateTime: str,    # "YYYY-MM-DD HH:MM:SS"
+    eventAccess: str = "Public",
+    images: Optional[bytes] = None,
+    rsvpRequired: int = 0,
+    isPriced: int = 0,
+    cost: Optional[float] = None,
+) -> int:
     """
-    Inserts a new event record into the events table.
-    Parameters must be passed in from the frontend (React).
+    Insert a new event record into the events table.
+    - Validates eventType and eventAccess
+    - Automatically sets numberLikes = 0
+    - Returns: the newly created eventID
     """
 
-    # Use parameterized query (?) to prevent SQL injection
-    sql_command = """
-        INSERT INTO events (
-            creatorID,
-            creatorType,
-            eventName,
-            eventDescription,
-            location,
-            images,
-            eventType,
-            eventAccess,
-            startDateTime,
-            endDateTime,
-            numberLikes,
-            rsvpRequired,
-            isPriced,
-            cost
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
-    values = (
-        creatorID,
-        creatorType,
-        eventName,
-        eventDescription,
-        location,
-        images,
-        eventType,
-        eventAccess,
-        startDateTime,
-        endDateTime,
-        numberLikes,
-        rsvpRequired,
-        isPriced,
-        cost,
+    # Validation checks
+    if eventType not in ALLOWED_EVENT_TYPES:
+        raise ValueError(f"eventType must be one of: {sorted(ALLOWED_EVENT_TYPES)}")
+    if eventAccess not in ALLOWED_ACCESS:
+        raise ValueError(f"eventAccess must be one of: {sorted(ALLOWED_ACCESS)}")
+
+    # Insert into DB
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO events (
+                creatorID, eventName, eventDescription, location, images,
+                eventType, eventAccess, startDateTime, endDateTime,
+                numberLikes, rsvpRequired, isPriced, cost
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
+        """, (
+            creatorID, eventName, eventDescription, location, images,
+            eventType, eventAccess, startDateTime, endDateTime,
+            rsvpRequired, isPriced, cost
+        ))
+        conn.commit()
+        return cur.lastrowid
+
+
+# -----------------------------
+# DEBUG / LOCAL TESTING
+# Run this file directly to test event creation
+# (API will call create_event in production)
+# -----------------------------
+if __name__ == "__main__":
+    new_id = create_event(
+        creatorID=1,
+        eventName="Backend Test Event",
+        eventDescription="This event was created directly in create.py",
+        location="Library Room 210",
+        eventType="Workshops",
+        startDateTime="2025-10-15 14:00:00",
+        endDateTime="2025-10-15 16:00:00"
     )
-
-    try:
-        cursor.execute(sql_command, values)
-        sqliteConnection.commit()
-        print("Event created successfully.")
-    except Exception as e:
-        print(f"SQLite error while inserting event: {e}")
-
-    sqliteConnection.close()
-
-# ----------------------------- INSERT EVENT ----------------------------- #
-# Function to insert a new event into the events table
-def create_event(
-    BearID: int,
-    creatorType: str,
-    eventName: str,
-    eventDescription: str,
-    images: bytes,
-    eventType: str,
-    eventAccess: str,
-    startDateTime: str,
-    endDateTime: str,
-    listOfUsersRSVPd: bytes,
-    numberOfLikes: int,
-    listOfUsersLiked: bytes,
-):
-    """
-    Inserts a new event record into the events table.
-    Parameters must be passed in from the frontend (React).
-    """
-
-    # Use parameterized query (?) to prevent SQL injection
-    sql_command = """
-        INSERT INTO events (
-            BearID,
-            creatorType,
-            eventName,
-            eventDescription,
-            images,
-            eventType,
-            eventAccess,
-            startDateTime,
-            endDateTime,
-            listOfUsersRSVPd,
-            numberOfLikes,
-            listOfUsersLiked
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
-
-    # Values for the placeholders in the query
-    values = (
-        BearID,
-        creatorType,
-        eventName,
-        eventDescription,
-        images,
-        eventType,
-        eventAccess,
-        startDateTime,
-        endDateTime,
-        listOfUsersRSVPd,
-        numberOfLikes,
-        listOfUsersLiked,
-    )
-
-    try:
-        cursor.execute(sql_command, values)
-        sqliteConnection.commit()
-        print("Event created successfully.")
-    except Exception as e:
-        print(f"SQLite error while inserting event: {e}")
-
-    sqliteConnection.close()
-
-
-# Example usage (comment this out when React frontend calls it instead)
-# create_event(
-#     BearID=1,
-#     creatorType="Student",
-#     eventName="Coding Workshop",
-#     eventDescription="Learn Python basics!",
-#     images=None,  # You can pass raw bytes for images
-#     eventType="Workshops",
-#     eventAccess="Public",
-#     startDateTime="2025-10-01 10:00:00",
-#     endDateTime="2025-10-01 12:00:00",
-#     listOfUsersRSVPd=None,
-#     numberOfLikes=0,
-#     listOfUsersLiked=None,
-# )
-
-# Close the connection when done
-#sqliteConnection.close()
-
-"""(the db_operations_products file is a previous project I worked on.
-The other file is the script to make the database for my current project.
-I now have to implement crud. This is for the backend team, and the crud is
-going to be separated into a create file, update file, etc. I need this to
-be able to work with the front end with react, and I would like to know how
-to accomplish this with explanations and comments like how I formatted comments
-in the db_operations_products file. I am only focused on the events part right
-now, and the main point is for the user to be able to create, read, update, and
-delete events. don't include the title information at the top. also make sure the
-script is set up with the same formatting style as the db_creation_script file,
-not the first file.)
-
-Great, thanks for sharing both files. I see what you want:
-Follow the style/formatting of your DB_Creation_Script.py (plain script, not class-based like db_operations_products.py).
-Still include detailed inline comments like db_operations_products.py.
-CRUD should be split into separate scripts (create, read, update, delete).
-Only focused on events for now.
-Must work as backend logic so your React frontend can call these endpoints later.
-Here's how you can structure it. I'll start by showing you one file (for Create) in the same formatting style as your DB_Creation_Script, then I'll outline the other three.
-
-Other CRUD Files
-You'll make three more scripts the same way (copy the structure):
-
-read_events.py
-Fetch all events:
-SELECT * FROM events ORDER BY eventID DESC
-
-Fetch one event by ID:
-SELECT * FROM events WHERE eventID = ?
-
-update_event.py
-Update event fields by eventID:
-UPDATE events
-SET eventName = ?, eventDescription = ?, eventType = ?, ...
-WHERE eventID = ?
-
-delete_event.py
-Delete event by ID:
-DELETE FROM events WHERE eventID = ?
-
-Each file should:
-Open the database connection at the top.
-Use a function to handle the operation.
-Use parameterized queries with ?.
-Commit changes when necessary.
-Close the connection at the end.
-
-(This is the prompt I asked chatgpt and the result it gave me. The response includes the entire script so far)"""
+    print(f"New event created with ID: {new_id}")
