@@ -12,6 +12,10 @@ interface User {
     name: string;
 }
 
+// Define the available categories for mapping
+const AVAILABLE_CATEGORIES = ["Music", "Tech", "Art", "Sports", "Food", "Community", "Other"];
+
+
 const CreateEventForm: React.FC = () => {
   const { addEvent } = useEvents();
   const navigate = useNavigate();
@@ -22,7 +26,8 @@ const CreateEventForm: React.FC = () => {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
-  const [category, setCategory] = useState('');
+  // 💥 CHANGED: State is now an array of strings for multiple categories
+  const [categories, setCategories] = useState<string[]>([]); 
   const [rsvpRequired, setRsvpRequired] = useState(false);
   const [capacity, setCapacity] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -36,6 +41,19 @@ const CreateEventForm: React.FC = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false); // Controls Popup visibility
 
   
+  // Handler for updating the categories array
+  const handleCategoryChange = (e: ChangeEvent<HTMLInputElement>) => {
+      const categoryValue = e.target.value;
+      if (e.target.checked) {
+          // Add category if checked
+          setCategories(prev => [...prev, categoryValue]);
+      } else {
+          // Remove category if unchecked
+          setCategories(prev => prev.filter(cat => cat !== categoryValue));
+      }
+  };
+
+
   // Handler for inviting a user: adds a user to the invitedUsers list
   const handleInviteUser = (user: User) => {
       setInvitedUsers((prev) => {
@@ -70,9 +88,9 @@ const CreateEventForm: React.FC = () => {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-
-    if (!title || !description || !date || !location || !category) {
-      setError('Please fill out all required fields.');
+    // 💥 CHANGED: Check if the categories array is empty
+    if (!title || !description || !date || !location || categories.length === 0) {
+      setError('Please fill out all required fields, including at least one Category.');
       return;
     }
     
@@ -89,7 +107,8 @@ const CreateEventForm: React.FC = () => {
       description,
       startDate: date,
       location,
-      category,
+      // 💥 CHANGED: Pass the categories array
+      categories, 
       rsvpRequired,
       capacity: capacity ? parseInt(capacity, 10) : undefined,
       imageUrl: imageUrl || 'https://via.placeholder.com/300',
@@ -105,6 +124,8 @@ const CreateEventForm: React.FC = () => {
 
     addEvent(newEvent);
     setError(null);
+    // Note: The EventPreviewBanner expects a single 'category' string, 
+    // so it might need updating if you want to display multiple categories there.
     navigate(`/events/${newEvent.id}`);
   };
 
@@ -117,6 +138,7 @@ const CreateEventForm: React.FC = () => {
         date={date}
         location={location}
         imageUrl={imageUrl}
+        // If EventPreviewBanner supports multiple categories, you'd update this line too
       />
 
 
@@ -220,17 +242,25 @@ const CreateEventForm: React.FC = () => {
         </div>
 
         
-        {/* Category Select */}
+        {/* 💥 NEW MULTI-CATEGORY CHECKBOXES 💥 */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-          <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
-            <option value="">Select a category</option>
-            <option value="Music">Music</option>
-            <option value="Tech">Tech</option>
-            <option value="Art">Art</option>
-            <option value="Sports">Sports</option>
-            <option value="Food">Food</option>
-          </select>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Categories (Select one or more)</label>
+          <div className="flex flex-wrap gap-4 p-3 border border-gray-300 rounded-md">
+            {AVAILABLE_CATEGORIES.map(cat => (
+              <div key={cat} className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id={`cat-${cat}`} 
+                  value={cat}
+                  // Check if the category is currently in the state array
+                  checked={categories.includes(cat)} 
+                  onChange={handleCategoryChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label htmlFor={`cat-${cat}`} className="ml-2 text-sm text-gray-700">{cat}</label>
+              </div>
+            ))}
+          </div>
         </div>
 
 

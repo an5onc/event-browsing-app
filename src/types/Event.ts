@@ -28,7 +28,7 @@ export interface Event {
   distanceMi?: number;
 
   /** Category for grouping/filtering. */
-  category: string;
+  categories: string[];
 
   /** Online vs in-person filter. null/undefined = unknown/any. */
   online?: boolean | null;
