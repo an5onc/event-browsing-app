@@ -145,11 +145,12 @@ const CreateEventForm: React.FC = () => {
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
           <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
             <option value="">Select a category</option>
-            <option value="Music">Music</option>
-            <option value="Tech">Tech</option>
-            <option value="Art">Art</option>
+            <option value="Social">Social</option>
+            <option value="Academic">Academic</option>
             <option value="Sports">Sports</option>
-            <option value="Food">Food</option>
+            <option value="Arts">Arts</option>
+            <option value="Club">Club</option>
+            <option value="Other">Other</option>
           </select>
         </div>
 
