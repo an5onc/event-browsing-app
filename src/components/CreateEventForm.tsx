@@ -2,14 +2,22 @@ import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { useEvents } from '../context/EventsContext';
 import { useNavigate } from 'react-router-dom';
 import EventPreviewBanner from './EventPreviewBanner';
+import Popup from './Popup'; 
+import InviteUserSearch from './InviteUserSearch'; 
 
+
+// Define the User type (must match the type used in InviteUserSearch)
+interface User {
+    id: string;
+    name: string;
+}
 
 const CreateEventForm: React.FC = () => {
   const { addEvent } = useEvents();
   const navigate = useNavigate();
 
 
-  // State for each form field
+  // Standard Event State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
@@ -21,6 +29,30 @@ const CreateEventForm: React.FC = () => {
   const [isPriceRequired, setIsPriceRequired] = useState(false);
   const [price, setPrice] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  
+  // Private Event and Invitation State
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [invitedUsers, setInvitedUsers] = useState<User[]>([]); // List of invited users
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // Controls Popup visibility
+
+  
+  // Handler for inviting a user: adds a user to the invitedUsers list
+  const handleInviteUser = (user: User) => {
+      setInvitedUsers((prev) => {
+          // Prevent duplicates
+          if (prev.some(u => u.id === user.id)) return prev;
+          return [...prev, user];
+      });
+  };
+  
+  // Handler for toggling private and clearing invited users if unchecked
+  const handleTogglePrivate = (e: ChangeEvent<HTMLInputElement>) => {
+      const checked = e.target.checked;
+      setIsPrivate(checked);
+      if (!checked) {
+          setInvitedUsers([]); // Clear invites if it's no longer private
+      }
+  };
 
 
   /**
@@ -30,7 +62,6 @@ const CreateEventForm: React.FC = () => {
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // This creates a temporary URL that exists only in the browser
       setImageUrl(URL.createObjectURL(file));
     }
   };
@@ -44,6 +75,12 @@ const CreateEventForm: React.FC = () => {
       setError('Please fill out all required fields.');
       return;
     }
+    
+    // Check if private event has at least one invited user
+    if (isPrivate && invitedUsers.length === 0) {
+        setError('A private event must have at least one invited user.');
+        return;
+    }
 
 
     const newEvent = {
@@ -55,12 +92,14 @@ const CreateEventForm: React.FC = () => {
       category,
       rsvpRequired,
       capacity: capacity ? parseInt(capacity, 10) : undefined,
-      // In a real app, you would upload the file to a server here
-      // and save the permanent URL. We're using the temporary local URL.
       imageUrl: imageUrl || 'https://via.placeholder.com/300',
       price,
       likes: 0,
       rsvps: [],
+      // Pass new private properties
+      isPrivate,
+      // Pass the IDs of the invited users to be saved with the event data
+      invitedUserIds: invitedUsers.map(user => user.id), 
     };
 
 
@@ -113,6 +152,47 @@ const CreateEventForm: React.FC = () => {
         </div>
 
 
+        {/* --- EVENT OPTIONS --- */}
+        
+        {/* Is Private Checkbox */}
+        <div className="flex items-center">
+          <input 
+            type="checkbox" 
+            id="isPrivate" 
+            checked={isPrivate} 
+            onChange={handleTogglePrivate} // Use the new handler
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" 
+          />
+          <label htmlFor="isPrivate" className="ml-2 block text-sm font-medium text-gray-700">
+            Is this a **Private** Event?
+          </label>
+        </div>
+
+        {/* CONDITIONAL RENDERING: Invite User UI when isPrivate is true */}
+        {isPrivate && (
+          <div className="bg-yellow-50 p-4 border-l-4 border-yellow-400">
+            <h4 className="text-sm font-semibold text-yellow-800 mb-2">Private Event Invitation</h4>
+            
+            <button
+                type="button"
+                onClick={() => setIsPopupOpen(true)}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+                {invitedUsers.length > 0 ? `Manage ${invitedUsers.length} Invited Users` : 'Invite Users'}
+            </button>
+            
+            {invitedUsers.length > 0 && (
+                <p className="mt-2 text-xs text-gray-600">
+                    <span className="font-semibold">{invitedUsers.length}</span> users invited. 
+                    <span className="underline cursor-pointer ml-1" onClick={() => setIsPopupOpen(true)}>Click to view/add.</span>
+                </p>
+            )}
+            {!invitedUsers.length && (
+                <p className="mt-2 text-sm text-red-600 font-medium">No users invited yet!</p>
+            )}
+          </div>
+        )}
+        
         {/* RSVP Required Checkbox */}
         <div className="flex items-center">
           <input type="checkbox" id="rsvp" checked={rsvpRequired} onChange={(e) => setRsvpRequired(e.target.checked)} className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
@@ -127,19 +207,19 @@ const CreateEventForm: React.FC = () => {
         </div>
 
 
-
-
-         {/* Price */}
+        {/* Price Input */}
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
             <input
-              type="number" // It's also good practice to change the input type to "number"
+              type="number"
               id="price"
               value={price}
-              onChange={(e) => setPrice(parseInt(e.target.value))} // Convert the string to a number
+              onChange={(e) => setPrice(parseInt(e.target.value))}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-           />
-          </div>
+            />
+        </div>
+
+        
         {/* Category Select */}
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
@@ -155,7 +235,7 @@ const CreateEventForm: React.FC = () => {
 
 
         {/* --- OPTIONAL FIELDS --- */}
-       
+        
         {/* Banner Image Upload */}
         <div>
           <label htmlFor="imageUpload" className="block text-sm font-medium text-gray-700">Banner Image (Optional)</label>
@@ -180,12 +260,19 @@ const CreateEventForm: React.FC = () => {
           Create Event
         </button>
       </form>
+      
+      {/* Conditional Popup: Renders the Popup when isPopupOpen is true */}
+      {isPopupOpen && (
+          <Popup onClose={() => setIsPopupOpen(false)}>
+              <InviteUserSearch 
+                  onInvite={handleInviteUser}
+                  invitedUsers={invitedUsers}
+              />
+          </Popup>
+      )}
     </>
   );
 };
 
 
 export default CreateEventForm;
-
-
-
