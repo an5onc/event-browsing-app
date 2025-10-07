@@ -1,279 +1,82 @@
+import os
 import sqlite3
 
+"""
+=========================================================
+READ EVENTS (events table query)
+=========================================================
 
-## TODO
-## FOR SEARCHING TEAM: Add function to get all events and sort by chronological order before returning
-## FOR SEARCHING TEAM: Add function that returns all events with a given type
+Purpose:
+- Provides functions to fetch events from the DB.
+- Can fetch all events, a single event by ID, or a single field.
 
+What Changed:
+- Uses row_factory so results return as dicts, not tuples.
+- Excludes 'Inactive' events by default (soft-deleted).
+- Added chronological ordering option for better UI display.
 
-## TESTING PURPOSES ONLY ##
-def create():
-    ## TEMP
-    import create
+Frontend Use:
+- "Browse Events" page → call read_events() to populate event list.
+- "Event Details" page → call read_event_by_id() with the eventID.
+- Useful for both list views and detail views in frontend.
+"""
 
-    create.create_event_2(
-        creatorID=1,
-        creatorType="Student",
-        eventName="Sample Event",
-        eventType="Workshops",
-        eventDescription="This is a sample event description.",
-        location="Sample Location",
-        images=b'',
-        eventAccess="Public",
-        startDateTime="2024-10-01 10:00:00",
-        endDateTime="2024-10-01 12:00:00",
-        numberLikes=0,
-        rsvpRequired=0,
-        isPriced=0,
-        cost=0.0,
-    )
+# -----------------------------
+# DATABASE PATH
+# -----------------------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "db", "EventPlannerDB.db")
 
-    create.create_event_2(
-        creatorID=1,
-        creatorType="Student",
-        eventName="Coding Workshop",
-        eventType="Workshops",
-        eventDescription="Learn Python basics!",
-        location="Room 101",
-        images=None,  # You can pass raw bytes for images
-        eventAccess="Inactive",
-        startDateTime="2025-10-01 10:00:00",
-        endDateTime="2025-10-01 12:00:00",
-        numberLikes=0,
-        rsvpRequired=1,
-        isPriced=1,
-        cost=20.0,
-    )
-    ## TEMP
-## ^^^ TESTING PURPOSES ONLY ^^^ ##
+def _get_conn():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # return dict-like rows
+    return conn
 
-
-# Open connection to the SQLite database
-def get_db_connection():
-    sqliteConnection = sqlite3.connect("EventPlannerDB.db")
-    sqliteConnection.row_factory = sqlite3.Row  # Enable dictionary-like row access
-    return sqliteConnection
-
-
-# ----------------------------- READ EVENTS ----------------------------- #
-# Function to read all events from the events table
-def read_events():
+# -----------------------------
+# READ FUNCTIONS
+# -----------------------------
+def read_events(include_inactive: bool = False, chronological: bool = True) -> list[dict]:
     """
-    Reads all event records from the events table.
-    Returns a list of tuples, each representing an event record.
+    Return events as list of dicts.
+    Excludes 'Inactive' events by default.
+    Optionally sorts by startDateTime.
     """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        base = "SELECT * FROM events"
+        where = "" if include_inactive else " WHERE eventAccess != 'Inactive'"
+        order = " ORDER BY startDateTime ASC" if chronological else ""
+        cur.execute(base + where + order)
+        return [dict(r) for r in cur.fetchall()]
 
-    sqliteConnection = get_db_connection()
-
-    # Get rows instead of tuples
-    sqliteConnection.row_factory = sqlite3.Row
-
-    cursor = sqliteConnection.cursor()
-
-    # SQL query to select all records from the events table
-    sql_command = "SELECT * FROM events"
-
-    # Execute the query
-    cursor.execute(sql_command)
-
-    # Fetch all results from the executed query
-    events = cursor.fetchall()
-
-    sqliteConnection.close()
-
-    # Convert sqlite3.Row objects to dictionaries for easier access
-    return [dict(row) for row in events]
-
-
-# Function to read a specific event by eventID
-def read_event_by_id(event_id: int):
+def read_event_by_id(eventID: int, include_inactive: bool = False) -> dict | None:
     """
-    Reads a specific event record from the events table by eventID.
-    Returns a tuple representing the event record, or None if not found.
+    Fetch single event by ID.
+    Excludes 'Inactive' events unless override=True.
     """
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM events WHERE eventID = ?", (eventID,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        row = dict(row)
+        if not include_inactive and row.get("eventAccess") == "Inactive":
+            return None
+        return row
 
-    sqliteConnection = get_db_connection()
+def read_event_field(eventID: int, field: str) -> object | None:
+    """
+    Convenience: return one field value for event.
+    Returns None if event not found.
+    """
+    evt = read_event_by_id(eventID)
+    return None if not evt else evt.get(field)
 
-    # Get rows instead of tuples
-    sqliteConnection.row_factory = sqlite3.Row
-
-    cursor = sqliteConnection.cursor()
-
-    # SQL query to select a specific record from the events table by eventID
-    sql_command = "SELECT * FROM events WHERE eventID = ?"
-
-    # Execute the query with the provided event_id
-    cursor.execute(sql_command, (event_id,))
-
-    # Fetch the result from the executed query
-    event = cursor.fetchone()
-
-    # Check if event is active
-    if event is None:
-        print(f"No event found with eventID [{event_id}]")
-        return None
-
-    elif event["eventAccess"] == "Inactive": 
-        print(f"Event with eventID [{event_id}] is Inactive.")
-        return None
-
-    sqliteConnection.close()
-
-    return dict(event)
-
-
-# Read creatorID by eventID
-def read_event_creatorID(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["creatorID"]
-
-
-# Read creatorType by eventID
-def read_event_creatorType(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["creatorType"]
-
-
-# Read eventName by eventID
-def read_event_eventName(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["eventName"]
-
-
-# Read eventDescription by eventID
-def read_event_eventDescription(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["eventDescription"]
-
-
-# Read location by eventID
-def read_event_location(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["location"]
-
-
-# Read images by eventID
-def read_event_images(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["images"]
-
-
-# Read eventType by eventID
-def read_event_eventType(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["eventType"]
-
-
-# Read eventAccess by eventID
-def read_event_eventAccess(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["eventAccess"]
-
-
-# Read startDateTime by eventID
-def read_event_startDateTime(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["startDateTime"]
-
-
-# Read endDateTime by eventID
-def read_event_endDateTime(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["endDateTime"]
-
-
-# Read numberLikes by eventID
-def read_event_numberLikes(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["numberLikes"]
-
-
-# Read rsvpRequired by eventID
-def read_event_rsvpRequired(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["rsvpRequired"]
-
-
-# Read isPriced by eventID
-def read_event_isPriced(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["isPriced"]
-
-
-# Read cost by eventID
-def read_event_cost(event_id: int):
-    event = read_event_by_id(event_id)
-    if event is None:
-        return None
-    return event["cost"]
-
-
-#create()
-
-print(read_events())
-
-print("\n-----")
-print(read_event_by_id(1))
-print(read_event_by_id(2))
-print(read_event_by_id(999))  # Non-existent eventID
-print("-----")
-
-print("\n-----")
-print(read_event_creatorID(1))
-print(read_event_creatorType(1))
-print(read_event_eventName(1))
-print(read_event_eventDescription(1))
-print(read_event_location(1))
-print(read_event_images(1))
-print(read_event_eventType(1))
-print(read_event_eventAccess(1))
-print(read_event_startDateTime(1))
-print(read_event_endDateTime(1))
-print(read_event_numberLikes(1))
-print(read_event_rsvpRequired(1))
-print(read_event_isPriced(1))
-print(read_event_cost(1))
-print("-----")
-
-print("\n-----")
-print(read_event_creatorID(2))
-print(read_event_creatorType(2))
-print(read_event_eventName(2))
-# print(read_event_eventDescription(2))
-# print(read_event_location(2))
-# print(read_event_images(2))
-# print(read_event_eventType(2))
-# print(read_event_eventAccess(2))
-# print(read_event_startDateTime(2))
-# print(read_event_endDateTime(2))
-# print(read_event_numberLikes(2))
-# print(read_event_rsvpRequired(2))
-# print(read_event_isPriced(2))
-# print(read_event_cost(2))
-print("-----")
+# -----------------------------
+# DEBUG / LOCAL TESTING
+# -----------------------------
+if __name__ == "__main__":
+    print(read_events())
+    print(read_event_by_id(1))
+    print(read_event_field(1, "eventName"))

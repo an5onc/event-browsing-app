@@ -1,132 +1,68 @@
-import sqlite3
+"""
+=========================================================
+RSVP LOG (rsvpLog table integration)
+=========================================================
 
-DB_NAME = "EventPlannerDB.db"
+Purpose:
+- Manage RSVP actions: add, cancel, check, and fetch RSVPs.
+- Each RSVP = user (accountID) ↔ event (eventID).
 
+What Changed:
+- Uses shared DB resolver like CRUD files.
+- Ensures one RSVP per user/event (via `has_rsvp`).
+- Returns lists of eventIDs or accountIDs for querying.
 
-def get_connection():
-    """
-    Opens a connection to the SQLite database with foreign keys enabled.
-    Returns a connection object that can be used with context managers (with ... as ...).
-    """
-    conn = sqlite3.connect(DB_NAME)
-    conn.execute("PRAGMA foreign_keys = ON;")  # Ensure FK constraints are enforced
+Frontend Use:
+- Maps cleanly to endpoints (POST /rsvp, DELETE /rsvp, GET /rsvp).
+- Helps display attendees for events or show a user’s RSVPs.
+"""
+
+import os, sqlite3
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "db", "EventPlannerDB.db")
+
+def _get_conn():
+    """Helper: open SQLite connection with row_factory enabled."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     return conn
 
-
-def init_rsvp_table():
-    """
-    Creates the rsvpLog table if it doesn’t already exist.
-    This table links users (accounts) with events they RSVP to.
-    """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS rsvpLog (
-                rsvpID INTEGER PRIMARY KEY,         
-                eventID INTEGER NOT NULL,            
-                creatorID INTEGER NOT NULL,          
-                userWhoRSVPID INTEGER NOT NULL,      
-                FOREIGN KEY (eventID) REFERENCES events(eventID) ON DELETE CASCADE,
-                FOREIGN KEY (creatorID) REFERENCES events(creatorID) ON DELETE CASCADE,
-                FOREIGN KEY (userWhoRSVPID) REFERENCES accounts(accountID) ON DELETE CASCADE,
-                UNIQUE(eventID, userWhoRSVPID)       -- Prevent duplicate RSVPs per user/event
-            );
-        """)
-        conn.commit()
-
-
 def has_rsvp(user_id: int, event_id: int) -> bool:
-    """
-    Checks if a user has already RSVP'd to an event.
-    - Returns True if RSVP exists, False otherwise.
-    """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT 1 FROM rsvpLog
-            WHERE userWhoRSVPID=? AND eventID=?
-            LIMIT 1;
-        """, (user_id, event_id))
-        return cursor.fetchone() is not None
+    """Check if this user has RSVP’d to this event already."""
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM rsvpLog WHERE accountID=? AND eventID=? LIMIT 1", (user_id, event_id))
+        return cur.fetchone() is not None
 
-
-def add_rsvp(user_id: int, event_id: int, creator_id: int):
-    """
-    Adds a new RSVP entry for a user and event.
-    Will not insert a duplicate RSVP.
-    - user_id: ID of the account RSVP’ing
-    - event_id: ID of the event they are RSVP’ing to
-    - creator_id: ID of the account that created the event
-    """
+def add_rsvp(user_id: int, event_id: int):
+    """Add RSVP (if not already exists)."""
     if has_rsvp(user_id, event_id):
-        print(f" User {user_id} has already RSVP'd to event {event_id}.")
-        return
-
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO rsvpLog (eventID, creatorID, userWhoRSVPID)
-            VALUES (?, ?, ?);
-        """, (event_id, creator_id, user_id))
+        return False
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("INSERT INTO rsvpLog (eventID, accountID) VALUES (?, ?)", (event_id, user_id))
         conn.commit()
-
+        return True
 
 def cancel_rsvp(user_id: int, event_id: int):
-    """
-    Cancels an RSVP by removing the entry from rsvpLog.
-    - Removes only the RSVP for the matching user and event.
-    """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            DELETE FROM rsvpLog
-            WHERE userWhoRSVPID=? AND eventID=?;
-        """, (user_id, event_id))
+    """Cancel RSVP (remove this user’s RSVP for the event)."""
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM rsvpLog WHERE accountID=? AND eventID=?", (user_id, event_id))
         conn.commit()
-
+        return cur.rowcount > 0
 
 def get_event_rsvps(event_id: int):
-    """
-    Retrieves a list of all user IDs who RSVP’d to a given event.
-    - Returns: list of account IDs (integers)
-    """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT userWhoRSVPID FROM rsvpLog WHERE eventID=?;
-        """, (event_id,))
-        return [row[0] for row in cursor.fetchall()]
-
+    """Return list of accountIDs who RSVP’d to this event."""
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT accountID FROM rsvpLog WHERE eventID=?", (event_id,))
+        return [row[0] for row in cur.fetchall()]
 
 def get_user_rsvps(user_id: int):
-    """
-    Retrieves a list of all events a user has RSVP’d to.
-    - Returns: list of event IDs (integers)
-    """
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT eventID FROM rsvpLog WHERE userWhoRSVPID=?;
-        """, (user_id,))
-        return [row[0] for row in cursor.fetchall()]
-
-
-# Debug run
-if __name__ == "__main__":
-    init_rsvp_table()
-    print("✅ rsvpLog table initialized.")
-
-
-    try:
-        add_rsvp(1, 101, 50)  # user 1 RSVP’s to event 101 created by account 50
-        add_rsvp(1, 101, 50)  # duplicate attempt (should be blocked)
-        add_rsvp(2, 101, 50)
-    except sqlite3.IntegrityError as e:
-        print("Integrity Error (likely missing account/event rows):", e)
-
-    print("Event 101 RSVPs:", get_event_rsvps(101))
-    print("User 1 RSVPs:", get_user_rsvps(1))
-
-    cancel_rsvp(1, 101)
-    print("Event 101 RSVPs after cancel:", get_event_rsvps(101))
-
+    """Return list of eventIDs this user has RSVP’d to."""
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT eventID FROM rsvpLog WHERE accountID=?", (user_id,))
+        return [row[0] for row in cur.fetchall()]
