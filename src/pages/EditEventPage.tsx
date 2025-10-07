@@ -89,8 +89,8 @@ const EditEventPage: React.FC = () => {
           <label className="block text-sm font-medium text-brand-bluegrey">Category</label>
           <select
             className="mt-1 w-full px-3 py-2 border border-brand-bluegrey rounded-md focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold"
-            value={eventData.category}
-            onChange={(e) => handleChange('category', e.target.value as Event['category'])}
+            value={eventData.categories}
+            onChange={(e) => handleChange('categories', e.target.value as unknown as Event['categories'])}
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
