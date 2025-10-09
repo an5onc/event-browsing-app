@@ -19,7 +19,7 @@ const App: React.FC = () => {
     <>
       <Navbar />
       <Routes>
-        <Route path="/" element={<DefaultPage />} />
+       <Route path="/"element={<DefaultPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/create" element={<CreateEventPage />} />
         <Route path="/manage" element={<CreateAccountPage />} />
