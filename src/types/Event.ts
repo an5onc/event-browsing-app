@@ -30,6 +30,9 @@ export interface Event {
   /** Category for grouping/filtering. */
   categories: string[];
 
+  isPrivate?: boolean;
+  invitedUserIds?: string[];
+  rsvpRequired?: boolean;
   /** Online vs in-person filter. null/undefined = unknown/any. */
   online?: boolean | null;
 
