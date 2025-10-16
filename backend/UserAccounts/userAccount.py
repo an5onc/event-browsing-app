@@ -32,7 +32,11 @@ import random
 from datetime import datetime, timedelta
 
 # Path to SQLite DB
-DB_PATH = "../db/EventPlannerDB.db"
+import os
+# Get the directory where this file is located
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Go up one level to backend, then into db
+DB_PATH = os.path.join(os.path.dirname(CURRENT_DIR), "db", "EventPlannerDB.db")
 
 class userAccount:
     # ===========================================================
@@ -136,3 +140,66 @@ class userAccount:
             cur = conn.cursor()
             cur.execute("DELETE FROM accounts WHERE accountID = ?", (accountID,))
             conn.commit()
+
+    # ===========================================================
+    # Get User Info by Account ID
+    # ===========================================================
+    def get_user_by_id(self, accountID):
+        """
+        Get user information by accountID.
+        Returns: dict with user info or None if not found
+        """
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT accountID, accountType, email, isVerified
+                FROM accounts
+                WHERE accountID = ?
+            """, (accountID,))
+            row = cur.fetchone()
+
+        if row:
+            return dict(row)
+        return None
+
+    # ===========================================================
+    # Update Password
+    # ===========================================================
+    def update_password(self, accountID, current_password, new_password):
+        """
+        Update user password:
+        - Verifies current password
+        - Hashes new password with bcrypt
+        - Updates database
+        Returns: (True, "Success message") or (False, "Error message")
+        """
+        # First, get user's email to verify current password
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT email, password FROM accounts WHERE accountID = ?", (accountID,))
+            row = cur.fetchone()
+
+        if not row:
+            return False, "Account not found"
+
+        email, stored_hash = row
+
+        # Verify current password
+        if not bcrypt.checkpw(current_password.encode("utf-8"), stored_hash):
+            return False, "Current password is incorrect"
+
+        # Hash new password
+        new_hashed = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt())
+
+        # Update password in database
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE accounts
+                SET password = ?
+                WHERE accountID = ?
+            """, (new_hashed, accountID))
+            conn.commit()
+
+        return True, "Password updated successfully"

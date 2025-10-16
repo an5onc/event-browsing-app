@@ -8,8 +8,20 @@ import { Event } from '../types/Event';
 // intentionally decoupled from any particular back‑end; the
 // implementation uses localStorage but could easily be replaced with
 // real API calls.
+
+// Mock user interface for development/testing
+export interface User {
+  id: string;
+  name?: string;
+  username?: string;
+  email: string;
+  accountType?: string;
+}
+
 interface EventsContextProps {
   events: Event[];
+  currentUser: User | null;
+  setCurrentUser: (user: User | null) => void;
   addEvent: (event: Omit<Event, 'id' | 'likes' | 'rsvps' | 'userLiked' | 'userRsvped' | 'createdAt' | 'updatedAt'>) => void;
   updateEvent: (event: Event) => void;
   deleteEvent: (id: string) => void;
@@ -46,6 +58,22 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return stored ? (JSON.parse(stored) as Event[]) : [];
   });
 
+  // Mock user for development/testing - persisted in localStorage
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem('currentUser');
+    if (stored) {
+      return JSON.parse(stored) as User;
+    }
+    // Return a default mock user for development
+    return {
+      id: '12345',
+      name: 'Test User',
+      username: 'testuser',
+      email: 'test@bears.unco.edu',
+      accountType: 'Student'
+    };
+  });
+
   // Persist events on every change.  Storing JSON in localStorage
   // ensures the app can be refreshed without losing data.  In a
   // production app these writes would be debounced and sent to a
@@ -53,6 +81,15 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     localStorage.setItem('events', JSON.stringify(events));
   }, [events]);
+
+  // Persist current user changes to localStorage
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  }, [currentUser]);
 
   const addEvent: EventsContextProps['addEvent'] = (data) => {
     const now = new Date().toISOString();
@@ -85,11 +122,25 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setEvents((prev) =>
       prev.map((e) => {
         if (e.id !== id) return e;
-        const liked = e.userLiked ?? false;
+
+        // Get current user ID
+        const userId = currentUser?.id;
+        if (!userId) return e;
+
+        // Initialize likedBy array if it doesn't exist
+        const likedBy = e.likedBy || [];
+        const hasLiked = likedBy.includes(userId);
+
+        // Toggle user in likedBy array
+        const newLikedBy = hasLiked
+          ? likedBy.filter(uid => uid !== userId)
+          : [...likedBy, userId];
+
         return {
           ...e,
-          likes: liked ? e.likes - 1 : e.likes + 1,
-          userLiked: !liked,
+          likedBy: newLikedBy,
+          likes: newLikedBy.length,
+          userLiked: !hasLiked, // Keep for backward compatibility
         };
       }),
     );
@@ -99,18 +150,32 @@ export const EventsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setEvents((prev) =>
       prev.map((e) => {
         if (e.id !== id) return e;
-        const rsvped = e.userRsvped ?? false;
+
+        // Get current user ID
+        const userId = currentUser?.id;
+        if (!userId) return e;
+
+        // Initialize rsvpedBy array if it doesn't exist
+        const rsvpedBy = e.rsvpedBy || [];
+        const hasRsvped = rsvpedBy.includes(userId);
+
+        // Toggle user in rsvpedBy array
+        const newRsvpedBy = hasRsvped
+          ? rsvpedBy.filter(uid => uid !== userId)
+          : [...rsvpedBy, userId];
+
         return {
           ...e,
-          rsvps: rsvped ? e.rsvps - 1 : e.rsvps + 1,
-          userRsvped: !rsvped,
+          rsvpedBy: newRsvpedBy,
+          rsvps: Array.isArray(e.rsvps) ? newRsvpedBy : newRsvpedBy.length,
+          userRsvped: !hasRsvped, // Keep for backward compatibility
         };
       }),
     );
   };
 
   return (
-    <EventsContext.Provider value={{ events, addEvent, updateEvent, deleteEvent, toggleLike, toggleRsvp }}>
+    <EventsContext.Provider value={{ events, currentUser, setCurrentUser, addEvent, updateEvent, deleteEvent, toggleLike, toggleRsvp }}>
       {children}
     </EventsContext.Provider>
   );

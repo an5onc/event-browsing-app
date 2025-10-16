@@ -44,11 +44,20 @@ export interface Event {
 
   /** Engagement metrics. */
   likes: number;
-  rsvps: number;
+  rsvps: number | string[]; // Can be a count OR array of user IDs
 
-  /** Per-user flags. */
+  /** Per-user flags (deprecated - use likedBy/rsvpedBy arrays instead). */
   userLiked?: boolean;
   userRsvped?: boolean;
+
+  /** Arrays of user IDs who interacted with this event */
+  likedBy?: string[]; // Array of user IDs who liked this event
+  rsvpedBy?: string[]; // Array of user IDs who RSVP'd to this event
+
+  /** Event creator information */
+  creatorId?: string;
+  createdBy?: string;
+  creator?: { id: string; name?: string };
 
   /** Timestamps. */
   createdAt: string;

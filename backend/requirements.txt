@@ -1,0 +1,8 @@
+# Core FastAPI dependencies
+fastapi
+uvicorn[standard]
+
+# Validation and security
+email-validator
+bcrypt
+python-multipart
