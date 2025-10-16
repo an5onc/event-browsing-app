@@ -217,3 +217,16 @@ yarn-error.log
 .DS_Store
 .vscode/
 .idea/
+
+# Local testing data (DO NOT COMMIT)
+backend/db/*.db
+backend/db/*.db-journal
+backend/db/*.db-shm
+backend/db/*.db-wal
+
+# Documentation (can be committed or ignored)
+# Uncomment the ones you DON'T want to push:
+# BACKEND_SETUP.md
+# DEV_MODE_GUIDE.md
+# PASSWORD_CHANGE_TEST_GUIDE.md
+# USER_SPECIFIC_EVENTS_GUIDE.md
